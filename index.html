@@ -99,7 +99,7 @@
             <div id="building-labels"></div>
             <div class="map-hint">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-              Click any college block to inspect detailed energy & room analytics · Drag to orbit 3D view
+              Click any block to inspect detailed energy, solar & rainwater analytics · Drag to orbit 3D view
             </div>
           </div>
 
@@ -140,8 +140,8 @@
                 <span>Campus AI Engine</span>
               </div>
               <p class="nexus-insight-text">
-                Saranathan AI Engine synchronized Generator Room peak shaving with JS Block lab schedules,
-                offsetting ₹540/day in peak tariff charges while maintaining thermal comfort across all blocks.
+                Saranathan AI Engine synchronized Basketball Court sub-surface rainwater runoff (45,000 L tank)
+                with JS Block cooling loops, saving ₹620/day while generating 16.5 kW from canopy solar.
               </p>
             </div>
 
@@ -164,14 +164,18 @@
       </section>
 
       <!-- ──────────────────────────────────────────────────
-           SCREEN 2 — BUILDING DRILL-DOWN
+           SCREEN 2 — BUILDING DRILL-DOWN (LUXURY OVERHAUL)
            ────────────────────────────────────────────────── -->
       <section id="screen-building" class="screen">
 
+        <!-- Executive Header Banner -->
         <div class="building-header">
           <button class="back-btn" id="back-btn">← Back to Campus Map</button>
           <div class="building-title-wrap">
-            <h2 id="building-name">JS block</h2>
+            <div class="title-row">
+              <h2 id="building-name">JS block</h2>
+              <span class="status-badge" id="building-status-badge">ACTIVE OPERATIONAL</span>
+            </div>
             <span class="building-subtitle" id="building-subtitle">Electrical & Electronics / Basic Sciences</span>
           </div>
           <div class="building-stats">
@@ -187,19 +191,96 @@
               <span class="stat-value" id="building-water">19.5 L/min</span>
               <span class="stat-label">Water Flow</span>
             </div>
+            <div class="stat">
+              <span class="stat-value" id="building-solar">18.2 kW</span>
+              <span class="stat-label">Roof Solar</span>
+            </div>
           </div>
         </div>
 
+        <!-- Building Content Split View -->
         <div class="building-content">
-          <div class="rooms-grid" id="rooms-grid">
-            <!-- Dynamic room cards -->
-          </div>
-          <div class="power-chart-panel">
-            <h3>24-Hour Block Load Curve</h3>
-            <div class="power-chart-container">
-              <canvas id="power-chart"></canvas>
+          
+          <!-- Left Column: Room Filter Tabs + Room Cards -->
+          <div class="building-left-col">
+            <div class="room-filters">
+              <button class="filter-tab active" data-filter="all">All Rooms (<span id="count-all">8</span>)</button>
+              <button class="filter-tab" data-filter="occupied">Occupied (<span id="count-occupied">5</span>)</button>
+              <button class="filter-tab" data-filter="hvac">HVAC Active (<span id="count-hvac">4</span>)</button>
+              <button class="filter-tab" data-filter="eco">Eco Standby (<span id="count-eco">3</span>)</button>
+            </div>
+
+            <div class="rooms-grid" id="rooms-grid">
+              <!-- Populated by JS -->
             </div>
           </div>
+
+          <!-- Right Column: Load Curve + Rainwater & Solar Card + Specs -->
+          <div class="building-right-col">
+            
+            <!-- 24h Load Curve Chart -->
+            <div class="power-chart-panel">
+              <div class="panel-header">
+                <h3>24-Hour Block Load Curve</h3>
+                <span class="panel-badge">LIVE SENSORS</span>
+              </div>
+              <div class="power-chart-container">
+                <canvas id="power-chart"></canvas>
+              </div>
+            </div>
+
+            <!-- Sub-surface Rainwater & Solar Card -->
+            <div class="subsystem-card">
+              <div class="subsystem-header">
+                <span class="subsystem-icon">💧</span>
+                <div>
+                  <h4>Rainwater Harvesting & Solar Infrastructure</h4>
+                  <span class="subsystem-tag">ECO SUSTAINABILITY MATRIX</span>
+                </div>
+              </div>
+              <div class="subsystem-grid">
+                <div class="subsystem-stat">
+                  <span class="sub-label">Cistern Capacity</span>
+                  <span class="sub-val" id="detail-rain-capacity">45,000 L</span>
+                  <div class="progress-bar-bg"><div class="progress-bar-fill water" id="detail-rain-bar" style="width: 88%;"></div></div>
+                  <span class="sub-sub" id="detail-rain-level">88% Reservoir Level</span>
+                </div>
+                <div class="subsystem-stat">
+                  <span class="sub-label">Roof Solar Offset</span>
+                  <span class="sub-val" id="detail-solar-gen">18.2 kW</span>
+                  <div class="progress-bar-bg"><div class="progress-bar-fill solar" id="detail-solar-bar" style="width: 72%;"></div></div>
+                  <span class="sub-sub">72% Peak Offset</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Environmental & Technical Equipment Specs Card -->
+            <div class="env-specs-card">
+              <div class="env-header">
+                <h4>Ambient & Technical Equipment Specs</h4>
+              </div>
+              <div class="env-grid">
+                <div class="env-item">
+                  <span class="env-label">Air Quality Index</span>
+                  <span class="env-value emerald" id="detail-aqi">38 AQI (Good)</span>
+                </div>
+                <div class="env-item">
+                  <span class="env-label">Ambient Temp</span>
+                  <span class="env-value" id="detail-temp">23.5 °C</span>
+                </div>
+                <div class="env-item">
+                  <span class="env-label">HVAC COP Score</span>
+                  <span class="env-value" id="detail-hvac-cop">94% Efficiency</span>
+                </div>
+                <div class="env-item">
+                  <span class="env-label">Grid Sync Status</span>
+                  <span class="env-value emerald">100% Balanced</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
         </div>
 
       </section>
