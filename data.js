@@ -68,8 +68,6 @@ const CampusData = {
       occupancy: 68, power: 28.5, water: 24.4,
       solarGeneration: 14.0, rainwaterCapacity: 12000, rainwaterLevel: 75, aqi: 42, temp: 25.0, hvacEfficiency: 91,
     },
-
-    /* ── Sports & Athletics Complex (Clustered Together) ──── */
     {
       id: 'ground',
       name: 'Ground',
@@ -90,7 +88,68 @@ const CampusData = {
     },
   ],
 
-  /* ── Detailed Room Inspection Data ──────────────────────── */
+  /* ── Block-Specific Room & Equipment Inspection Data ──────── */
+  blockRooms: {
+    ksBlock: [
+      { id: 'ks101', name: 'KS-101 (AI & ML Research Lab)', category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '22 °C', capacity: 95, lastAction: '11:45 AM — AI Workstation cluster active' },
+      { id: 'ks102', name: 'KS-102 (Deep Learning Center)', category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '23 °C', capacity: 90, lastAction: '11:40 AM — High GPU load cooling set' },
+      { id: 'ks201', name: 'KS-201 (Cloud Computing Lab)', category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '22 °C', capacity: 88, lastAction: '11:30 AM — Scheduled practical session' },
+      { id: 'ks202', name: 'KS-202 (Executive Admin Office)', category: 'occupied',      occupied: true,  lights: 'on',  ac: 'off', temp: '24 °C', capacity: 60, lastAction: '11:15 AM — Natural airflow mode' },
+      { id: 'ks301', name: 'KS-301 (Conference Hall)',      category: 'eco',           occupied: false, lights: 'off', ac: 'off', temp: '25 °C', capacity: 0,  lastAction: '10:50 AM — Session ended, eco standby' },
+      { id: 'ks302', name: 'KS Server Control Room',       category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '20 °C', capacity: 100,lastAction: '24x7 — Climate control active' },
+    ],
+    rvBlock: [
+      { id: 'rv101', name: 'RV-101 (VLSI Design Lab)', category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '23 °C', capacity: 88, lastAction: '11:38 AM — Circuit simulation lab live' },
+      { id: 'rv102', name: 'RV-102 (Signal Processing)',category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '23 °C', capacity: 82, lastAction: '11:25 AM — DSP boards powered' },
+      { id: 'rv201', name: 'RV-201 (Telecom Lab)',       category: 'eco',           occupied: false, lights: 'off', ac: 'off', temp: '26 °C', capacity: 0,  lastAction: '11:00 AM — Class finished, lights OFF' },
+      { id: 'rv202', name: 'RV-202 (IT Class 3)',         category: 'eco',           occupied: false, lights: 'off', ac: 'off', temp: '25 °C', capacity: 0,  lastAction: '10:45 AM — Standby eco mode' },
+      { id: 'rv301', name: 'RV-301 (Project Research)',   category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '23 °C', capacity: 75, lastAction: '11:10 AM — Student team session' },
+      { id: 'rv302', name: 'RV Seminar Room',            category: 'eco',           occupied: false, lights: 'off', ac: 'off', temp: '25 °C', capacity: 0,  lastAction: '10:30 AM — Auto shutoff complete' },
+    ],
+    jsBlock: [
+      { id: 'js101', name: 'JS-101 (Power Systems Lab)', category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '23 °C', capacity: 85, lastAction: '11:42 AM — Smart HVAC optimized to 23 °C' },
+      { id: 'js102', name: 'JS-102 (Embedded Systems Lab)', category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '23 °C', capacity: 92, lastAction: '11:35 AM — Auto-occupancy verified' },
+      { id: 'js201', name: 'JS-201 (High Voltage Lab)', category: 'eco',           occupied: false, lights: 'off', ac: 'off', temp: '26 °C', capacity: 0,  lastAction: '11:15 AM — Lights OFF (idle 15 min)' },
+      { id: 'js202', name: 'JS-202 (Lecture Hall 4)',   category: 'eco',           occupied: false, lights: 'off', ac: 'off', temp: '25 °C', capacity: 0,  lastAction: '10:58 AM — AC auto shutoff (no class)' },
+      { id: 'js301', name: 'JS-301 (IoT Research Lab)', category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '22 °C', capacity: 78, lastAction: '11:30 AM — Workstation load normal' },
+      { id: 'js302', name: 'JS Simulation Center',    category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '23 °C', capacity: 64, lastAction: '10:00 AM — Scheduled research run' },
+      { id: 'js401', name: 'JS Seminar Hall',          category: 'eco',           occupied: false, lights: 'off', ac: 'off', temp: '25 °C', capacity: 0,  lastAction: '11:20 AM — Session ended, standby mode' },
+      { id: 'js402', name: 'JS Faculty Wing',          category: 'occupied',      occupied: true,  lights: 'on',  ac: 'off', temp: '24 °C', capacity: 50, lastAction: '11:00 AM — Natural ventilation mode' },
+    ],
+    mechBlock: [
+      { id: 'me101', name: 'ME-101 (CAD/CAM Lab)',       category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '23 °C', capacity: 90, lastAction: '11:30 AM — Workstations & CNC simulation' },
+      { id: 'me102', name: 'ME-102 (Robotics & Automation)', category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '22 °C', capacity: 85, lastAction: '11:20 AM — Robotic arm testing' },
+      { id: 'me201', name: 'ME-201 (Thermodynamics Lab)', category: 'occupied',      occupied: true,  lights: 'on',  ac: 'off', temp: '25 °C', capacity: 70, lastAction: '11:05 AM — Engine test rig operational' },
+      { id: 'me202', name: 'ME-202 (Fluid Mechanics)',    category: 'eco',           occupied: false, lights: 'off', ac: 'off', temp: '26 °C', capacity: 0,  lastAction: '10:40 AM — Eco standby active' },
+      { id: 'me301', name: 'ME CNC Workshop',           category: 'occupied',      occupied: true,  lights: 'on',  ac: 'off', temp: '26 °C', capacity: 80, lastAction: '09:45 AM — Heavy machining scheduled' },
+    ],
+    cafeteria: [
+      { id: 'caf1', name: 'Dining Main Pavilion',        category: 'occupied',      occupied: true,  lights: 'on',  ac: 'off', temp: '25 °C', capacity: 85, lastAction: '11:50 AM — Lunch rush prep active' },
+      { id: 'caf2', name: 'Food Court Counter Area',    category: 'occupied',      occupied: true,  lights: 'on',  ac: 'off', temp: '25 °C', capacity: 90, lastAction: '11:30 AM — High counter traffic' },
+      { id: 'caf3', name: 'Kitchen & Prep Suite',       category: 'occupied',      occupied: true,  lights: 'on',  ac: 'off', temp: '26 °C', capacity: 95, lastAction: '11:10 AM — Exhaust fans & water intake' },
+      { id: 'caf4', name: 'Cold Storage Unit 1',        category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '4 °C',  capacity: 100,lastAction: '24x7 — Refrigeration load normal' },
+    ],
+    generatorRoom: [
+      { id: 'gen1', name: 'Primary HV Substation Panel',category: 'occupied',      occupied: true,  lights: 'on',  ac: 'off', temp: '27 °C', capacity: 100,lastAction: '11:45 AM — Grid synchronization 100%' },
+      { id: 'gen2', name: 'Diesel Generator 1 (Standby)',category: 'eco',          occupied: false, lights: 'off', ac: 'off', temp: '28 °C', capacity: 0,  lastAction: '10:30 AM — Standby auto-test passed' },
+      { id: 'gen3', name: 'Diesel Generator 2 (Standby)',category: 'eco',          occupied: false, lights: 'off', ac: 'off', temp: '28 °C', capacity: 0,  lastAction: '10:30 AM — Standby ready' },
+      { id: 'gen4', name: 'Main UPS Battery Bank',      category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '22 °C', capacity: 100,lastAction: '24x7 — Battery float charge normal' },
+    ],
+    basketballCourt: [
+      { id: 'crt1', name: 'Underground Cistern Pump 1', category: 'occupied',      occupied: true,  lights: 'on',  ac: 'off', temp: '26 °C', capacity: 92, lastAction: '11:50 AM — Runoff harvesting active' },
+      { id: 'crt2', name: 'Underground Cistern Pump 2', category: 'eco',           occupied: false, lights: 'off', ac: 'off', temp: '26 °C', capacity: 0,  lastAction: '11:20 AM — Standby pump ready' },
+      { id: 'crt3', name: 'Rainwater Filtration Unit',  category: 'occupied',      occupied: true,  lights: 'on',  ac: 'off', temp: '25 °C', capacity: 90, lastAction: '11:20 AM — Auto flush cycle complete' },
+      { id: 'crt4', name: 'Court Floodlight Controller',category: 'eco',           occupied: false, lights: 'off', ac: 'off', temp: '27 °C', capacity: 0,  lastAction: '06:00 AM — Day mode auto shutoff' },
+    ],
+    ground: [
+      { id: 'grd1', name: 'Turf Drip Irrigation Zone A', category: 'eco',          occupied: false, lights: 'off', ac: 'off', temp: '28 °C', capacity: 0,  lastAction: '06:00 AM — Drip cycle completed' },
+      { id: 'grd2', name: 'Turf Drip Irrigation Zone B', category: 'eco',          occupied: false, lights: 'off', ac: 'off', temp: '28 °C', capacity: 0,  lastAction: '06:00 AM — Drip cycle completed' },
+      { id: 'grd3', name: 'Stadium Floodlight Bank 1',   category: 'eco',          occupied: false, lights: 'off', ac: 'off', temp: '28 °C', capacity: 0,  lastAction: '06:00 AM — Day mode auto shutoff' },
+      { id: 'grd4', name: 'Stadium Floodlight Bank 2',   category: 'eco',          occupied: false, lights: 'off', ac: 'off', temp: '28 °C', capacity: 0,  lastAction: '06:00 AM — Day mode auto shutoff' },
+    ],
+  },
+
+  /* ── Legacy fallback rooms array ────────────────────────── */
   rooms: [
     { id: 'r101', name: 'JS-101 (Power Systems Lab)', category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '23 °C', capacity: 85, lastAction: '11:42 AM — Smart HVAC optimized to 23 °C' },
     { id: 'r102', name: 'JS-102 (Embedded Systems Lab)', category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '23 °C', capacity: 92, lastAction: '11:35 AM — Auto-occupancy verified' },

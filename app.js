@@ -57,6 +57,17 @@ const App = {
     const titleEl = document.getElementById('screen-title');
     if (titleEl) titleEl.textContent = titles[name] || name;
 
+    // If opening building screen directly, guarantee building data is populated
+    if (name === 'building' && !this.currentBuilding) {
+      this.currentBuilding = CampusData.buildings[0]; // Default to KS block
+    }
+
+    if (name === 'building' && this.currentBuilding) {
+      this._updateBuildingHeaderStats(this.currentBuilding);
+      this._updateFilterTabCounts();
+      this._populateRooms();
+    }
+
     requestAnimationFrame(() => {
       if (name === 'water' && !this._waterInitialized) {
         WaterNetwork.init('water-network');
@@ -77,7 +88,21 @@ const App = {
   /* ── Building Inspection Drill-down ────────────────────── */
   showBuilding(building) {
     this.currentBuilding = building;
+    this.currentFilter = 'all';
 
+    this._updateBuildingHeaderStats(building);
+    this._updateFilterTabCounts();
+    this._populateRooms();
+
+    // Switch screen to building view
+    this.showScreen('building');
+
+    if (this._powerChartInitialized) {
+      requestAnimationFrame(() => Charts.initPowerChart());
+    }
+  },
+
+  _updateBuildingHeaderStats(building) {
     const nameEl   = document.getElementById('building-name');
     const subEl    = document.getElementById('building-subtitle');
     const occEl    = document.getElementById('building-occupancy');
@@ -131,18 +156,6 @@ const App = {
     if (aqiEl)  aqiEl.textContent  = (building.aqi || 38) + ' AQI (Good)';
     if (tempEl) tempEl.textContent = (building.temp || 23.5) + ' °C';
     if (copEl)  copEl.textContent  = (building.hvacEfficiency || 94) + '% Efficiency';
-
-    // Populate filtered room cards
-    this.currentFilter = 'all';
-    this._updateFilterTabCounts();
-    this._populateRooms();
-
-    // Switch screen to building view
-    this.showScreen('building');
-
-    if (this._powerChartInitialized) {
-      requestAnimationFrame(() => Charts.initPowerChart());
-    }
   },
 
   /* ── Room Category Filter Tabs ─────────────────────────── */
@@ -157,21 +170,28 @@ const App = {
     });
   },
 
+  _getRoomsForCurrentBuilding() {
+    if (!this.currentBuilding) return CampusData.rooms;
+    const bId = this.currentBuilding.id;
+    return (CampusData.blockRooms && CampusData.blockRooms[bId]) ? CampusData.blockRooms[bId] : CampusData.rooms;
+  },
+
   _updateFilterTabCounts() {
-    const allCount = CampusData.rooms.length;
-    const occCount = CampusData.rooms.filter(r => r.occupied).length;
-    const hvacCount = CampusData.rooms.filter(r => r.ac === 'on').length;
-    const ecoCount = CampusData.rooms.filter(r => !r.occupied).length;
+    const roomsList = this._getRoomsForCurrentBuilding();
+    const allCount  = roomsList.length;
+    const occCount  = roomsList.filter(r => r.occupied).length;
+    const hvacCount = roomsList.filter(r => r.ac === 'on').length;
+    const ecoCount  = roomsList.filter(r => !r.occupied).length;
 
-    const elAll = document.getElementById('count-all');
-    const elOcc = document.getElementById('count-occupied');
+    const elAll  = document.getElementById('count-all');
+    const elOcc  = document.getElementById('count-occupied');
     const elHvac = document.getElementById('count-hvac');
-    const elEco = document.getElementById('count-eco');
+    const elEco  = document.getElementById('count-eco');
 
-    if (elAll) elAll.textContent = allCount;
-    if (elOcc) elOcc.textContent = occCount;
+    if (elAll)  elAll.textContent  = allCount;
+    if (elOcc)  elOcc.textContent  = occCount;
     if (elHvac) elHvac.textContent = hvacCount;
-    if (elEco) elEco.textContent = ecoCount;
+    if (elEco)  elEco.textContent  = ecoCount;
   },
 
   _populateRooms() {
@@ -179,13 +199,24 @@ const App = {
     if (!grid) return;
     grid.innerHTML = '';
 
-    let filteredRooms = CampusData.rooms;
+    const roomsList = this._getRoomsForCurrentBuilding();
+    let filteredRooms = roomsList;
+
     if (this.currentFilter === 'occupied') {
-      filteredRooms = CampusData.rooms.filter(r => r.occupied);
+      filteredRooms = roomsList.filter(r => r.occupied);
     } else if (this.currentFilter === 'hvac') {
-      filteredRooms = CampusData.rooms.filter(r => r.ac === 'on');
+      filteredRooms = roomsList.filter(r => r.ac === 'on');
     } else if (this.currentFilter === 'eco') {
-      filteredRooms = CampusData.rooms.filter(r => !r.occupied);
+      filteredRooms = roomsList.filter(r => !r.occupied);
+    }
+
+    if (filteredRooms.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-rooms-msg">
+          <span>ℹ️</span> No rooms found for the selected filter category.
+        </div>
+      `;
+      return;
     }
 
     filteredRooms.forEach((room, i) => {
@@ -195,13 +226,13 @@ const App = {
       card.style.animation = 'fadeInUp 0.4s ease both';
 
       const occupiedClass = room.occupied ? 'occupied' : 'empty';
-      const lightsClass = room.lights === 'on' ? 'on' : 'off';
-      const acClass = room.ac === 'on' ? 'on' : 'off';
+      const lightsClass   = room.lights === 'on' ? 'on' : 'off';
+      const acClass       = room.ac === 'on' ? 'on' : 'off';
 
       card.innerHTML = `
         <div class="room-top">
           <span class="room-name">${room.name}</span>
-          <span class="occupancy-dot ${occupiedClass}" title="${room.occupied ? 'Occupied' : 'Empty'}"></span>
+          <span class="occupancy-dot ${occupiedClass}" title="${room.occupied ? 'Occupied / Active' : 'Empty / Eco'}"></span>
         </div>
         <div class="room-statuses">
           <span class="room-status-pill ${lightsClass}">💡 Lights ${room.lights.toUpperCase()}</span>
