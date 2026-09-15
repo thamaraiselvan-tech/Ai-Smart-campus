@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440">
+  <meta name="description" content="CampusNexus — Unified energy & water intelligence dashboard for smart campus operations.">
+  <title>CampusNexus — Smart Campus Dashboard</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ════════════════════════════════════════════════════
+       SIDEBAR
+       ════════════════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo" title="CampusNexus">CN</div>
+    <nav>
+      <ul>
+        <li class="nav-item active" data-screen="overview" data-tooltip="Overview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </li>
+        <li class="nav-item" data-screen="building" data-tooltip="Building">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/>
+            <circle cx="9" cy="10" r="0.5" fill="currentColor"/><circle cx="15" cy="10" r="0.5" fill="currentColor"/>
+            <circle cx="9" cy="14" r="0.5" fill="currentColor"/><circle cx="15" cy="14" r="0.5" fill="currentColor"/>
+          </svg>
+        </li>
+        <li class="nav-item" data-screen="water" data-tooltip="Water & Leaks">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+          </svg>
+        </li>
+        <li class="nav-item" data-screen="alerts" data-tooltip="Alerts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- ════════════════════════════════════════════════════
+       MAIN AREA
+       ════════════════════════════════════════════════════ -->
+  <div class="main">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <h1 id="screen-title">Overview Dashboard</h1>
+      <div class="topbar-right">
+        <span class="live-indicator">LIVE</span>
+        <span class="topbar-time" id="topbar-time">10:45 AM</span>
+      </div>
+    </header>
+
+    <!-- Screen Container -->
+    <div class="main-content">
+
+      <!-- ──────────────────────────────────────────────────
+           SCREEN 1 — OVERVIEW DASHBOARD
+           ────────────────────────────────────────────────── -->
+      <section id="screen-overview" class="screen active">
+
+        <div class="overview-grid">
+
+          <!-- Left — 3D Campus Map -->
+          <div class="map-container">
+            <div id="campus-3d"></div>
+            <div id="building-labels"></div>
+            <div class="map-hint">Click a building to inspect · Drag to rotate</div>
+          </div>
+
+          <!-- Center — KPI Cards -->
+          <div class="kpi-container">
+
+            <div class="kpi-card energy" id="kpi-energy">
+              <span class="kpi-label">Energy Saved Today</span>
+              <span class="kpi-value">142<span class="kpi-unit">kWh</span></span>
+              <div class="sparkline-container">
+                <canvas id="energy-sparkline"></canvas>
+              </div>
+            </div>
+
+            <div class="kpi-card water" id="kpi-water">
+              <span class="kpi-label">Water Loss Prevented</span>
+              <span class="kpi-value">1,240<span class="kpi-unit">L</span></span>
+              <div class="sparkline-container">
+                <canvas id="water-sparkline"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right — Nexus Insight + Legend -->
+          <div class="nexus-insight-wrapper">
+
+            <div class="nexus-insight-card">
+              <div class="nexus-insight-border"></div>
+              <div class="nexus-insight-header">
+                <span class="nexus-icon">🧠</span>
+                <span>Nexus Insight</span>
+              </div>
+              <p class="nexus-insight-text">
+                Block C's water pump was rescheduled to 1–4 AM (off-peak),
+                saving an estimated ₹380/day by pairing water demand with
+                idle electricity capacity.
+              </p>
+            </div>
+
+            <div class="map-legend">
+              <span class="map-legend-title">Building Status</span>
+              <div class="legend-item"><span class="legend-dot teal"></span> Active / Normal</div>
+              <div class="legend-item"><span class="legend-dot grey"></span> Powered Down</div>
+              <div class="legend-item"><span class="legend-dot amber"></span> Alert / Anomaly</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Bottom — Ticker Strip -->
+        <div class="ticker-strip">
+          <div class="ticker-track" id="ticker-track"></div>
+        </div>
+
+      </section>
+
+      <!-- ──────────────────────────────────────────────────
+           SCREEN 2 — BUILDING DRILL-DOWN
+           ────────────────────────────────────────────────── -->
+      <section id="screen-building" class="screen">
+
+        <div class="building-header">
+          <button class="back-btn" id="back-btn">← Back</button>
+          <h2 id="building-name">Block C</h2>
+          <div class="building-stats">
+            <div class="stat">
+              <span class="stat-value" id="building-occupancy">64%</span>
+              <span class="stat-label">Occupancy</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value" id="building-power">38 kW</span>
+              <span class="stat-label">Power Draw</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value" id="building-water">18.4 L/min</span>
+              <span class="stat-label">Water Flow</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="building-content">
+          <div class="rooms-grid" id="rooms-grid">
+            <!-- Populated by JS -->
+          </div>
+          <div class="power-chart-panel">
+            <h3>Power Draw — Last 24h</h3>
+            <div class="power-chart-container">
+              <canvas id="power-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ──────────────────────────────────────────────────
+           SCREEN 3 — WATER & LEAK VIEW
+           ────────────────────────────────────────────────── -->
+      <section id="screen-water" class="screen">
+
+        <div class="water-header">
+          <h2>Water & Leak Detection</h2>
+        </div>
+
+        <div class="water-content">
+          <div class="water-network-container">
+            <canvas id="water-network"></canvas>
+          </div>
+
+          <div class="water-explainability">
+            <div class="explainability-card alert">
+              <span class="explainability-icon">⚠️</span>
+              <div>
+                <div class="explainability-title">Anomaly Detected — Tank 2</div>
+                <p class="explainability-text">
+                  Flagged because current flow (<strong>18.4 L/min</strong>) exceeds the
+                  expected range (<strong>11–14 L/min</strong>) for this time and day.
+                </p>
+                <p class="explainability-detail">
+                  Flow is 34% above the 7-day rolling baseline for this hour.
+                  Pattern does not match known usage spikes (morning rush, class breaks).
+                  Recommend physical inspection of Tank 2 feeder line.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ──────────────────────────────────────────────────
+           SCREEN 4 — ALERTS / ACTION LOG
+           ────────────────────────────────────────────────── -->
+      <section id="screen-alerts" class="screen">
+
+        <div class="alerts-header">
+          <h2>Alerts & Action Log</h2>
+        </div>
+
+        <div class="alerts-list" id="alerts-list">
+          <!-- Populated by JS -->
+        </div>
+
+      </section>
+
+    </div><!-- /.main-content -->
+  </div><!-- /.main -->
+</div><!-- /.app -->
+
+<!-- Application Scripts (order matters) -->
+<script src="data.js"></script>
+<script src="campus3d.js"></script>
+<script src="charts.js"></script>
+<script src="water-network.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
