@@ -1,6 +1,6 @@
 /* ============================================================
-   Saranathan College of Engineering — Next-Level 3D Campus Scene
-   Three.js Master Plan, Stadium Lights, Basketball Hoops & Ambiance
+   Saranathan College of Engineering — High-Class Premium 3D Scene
+   Three.js Master Plan, Stadium Lights, AI Particles & Camera Lerp
    ============================================================ */
 
 const Campus3D = {
@@ -12,6 +12,11 @@ const Campus3D = {
   mouse: new THREE.Vector2(),
   container: null,
   buildings: [],
+  particles: null,
+  hoveredBuilding: null,
+  targetCamPos: null,
+  targetTargetPos: null,
+  isCameraPanning: false,
   animationId: null,
   _mouseOver: false,
   _autoRotateTimer: null,
@@ -27,10 +32,10 @@ const Campus3D = {
     /* ── Scene Setup ────────────────────────────────────── */
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xF1F5F9);
-    this.scene.fog = new THREE.FogExp2(0xF1F5F9, 0.018);
+    this.scene.fog = new THREE.FogExp2(0xF1F5F9, 0.016);
 
     /* ── Camera Setup ───────────────────────────────────── */
-    this.camera = new THREE.PerspectiveCamera(36, w / h, 0.1, 220);
+    this.camera = new THREE.PerspectiveCamera(35, w / h, 0.1, 250);
     this.camera.position.set(20, 16, 20);
     this.camera.lookAt(0, 0, 0);
 
@@ -41,7 +46,7 @@ const Campus3D = {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.18;
+    this.renderer.toneMappingExposure = 1.2;
     this.container.appendChild(this.renderer.domElement);
 
     /* ── Orbit Controls Setup ───────────────────────────── */
@@ -49,15 +54,16 @@ const Campus3D = {
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
     this.controls.maxPolarAngle = Math.PI / 2.3;
-    this.controls.minPolarAngle = 0.2;
-    this.controls.minDistance = 9;
-    this.controls.maxDistance = 38;
+    this.controls.minPolarAngle = 0.18;
+    this.controls.minDistance = 8;
+    this.controls.maxDistance = 40;
     this.controls.autoRotate = true;
-    this.controls.autoRotateSpeed = 0.4;
+    this.controls.autoRotateSpeed = 0.38;
     this.controls.target.set(0, 0, 0);
 
     this.controls.addEventListener('start', () => {
       this.controls.autoRotate = false;
+      this.isCameraPanning = false;
       clearTimeout(this._autoRotateTimer);
     });
     this.controls.addEventListener('end', () => {
@@ -69,14 +75,17 @@ const Campus3D = {
     /* ── Raycaster Setup ────────────────────────────────── */
     this.raycaster = new THREE.Raycaster();
 
-    /* ── Daylight Environment Lighting ───────────────────── */
+    /* ── Luxury Daylight & Rim Lighting ─────────────────── */
+    // Ambient Light
     this.scene.add(new THREE.AmbientLight(0xE2E8F0, 0.85));
 
+    // Sky/Ground Hemisphere Light
     const hemiLight = new THREE.HemisphereLight(0xFFFFFF, 0x94A3B8, 0.45);
     this.scene.add(hemiLight);
 
-    const sunLight = new THREE.DirectionalLight(0xFFFBEB, 1.35);
-    sunLight.position.set(20, 28, 16);
+    // Direct Sunlight
+    const sunLight = new THREE.DirectionalLight(0xFFFBEB, 1.45);
+    sunLight.position.set(22, 30, 18);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.set(2048, 2048);
     sunLight.shadow.camera.left   = -18;
@@ -84,19 +93,21 @@ const Campus3D = {
     sunLight.shadow.camera.top    =  18;
     sunLight.shadow.camera.bottom = -18;
     sunLight.shadow.camera.near   =  2;
-    sunLight.shadow.camera.far    =  60;
-    sunLight.shadow.bias = -0.0005;
+    sunLight.shadow.camera.far    =  65;
+    sunLight.shadow.bias = -0.0003;
     this.scene.add(sunLight);
 
-    const fillLight = new THREE.DirectionalLight(0x93C5FD, 0.35);
-    fillLight.position.set(-18, 14, -14);
-    this.scene.add(fillLight);
+    // Architectural Rim Light (Highlighting building silhouettes!)
+    const rimLight = new THREE.DirectionalLight(0x93C5FD, 0.45);
+    rimLight.position.set(-20, 16, -16);
+    this.scene.add(rimLight);
 
     /* ── Build Master Plan Campus Geometry ─────────────── */
     this._createGround();
     this._createCampusTreeAccents();
     this._createStreetLamps();
     this._createBuildings();
+    this._createAIParticles();
     this._createLabels();
 
     /* ── Event Listeners ────────────────────────────────── */
@@ -115,7 +126,7 @@ const Campus3D = {
 
   /* ── Ground Paving + Master Plan Roadways ──────────────── */
   _createGround() {
-    const groundGeo = new THREE.PlaneGeometry(34, 34);
+    const groundGeo = new THREE.PlaneGeometry(36, 36);
     const groundMat = new THREE.MeshStandardMaterial({
       color: 0xE2E8F0,
       roughness: 0.85,
@@ -127,7 +138,7 @@ const Campus3D = {
     ground.receiveShadow = true;
     this.scene.add(ground);
 
-    const grid = new THREE.GridHelper(34, 34, 0xCBD5E1, 0xCBD5E1);
+    const grid = new THREE.GridHelper(36, 36, 0xCBD5E1, 0xCBD5E1);
     grid.material.opacity = 0.45;
     grid.material.transparent = true;
     grid.position.y = 0.001;
@@ -136,11 +147,11 @@ const Campus3D = {
     // Master Plan Roadways & Walkway Concourse
     const roadMat = new THREE.MeshStandardMaterial({ color: 0xCBD5E1, roughness: 0.7 });
     const roads = [
-      { x: 0, z: 0, w: 0.4, d: 24 },                     // Central Pedestrian Boulevard
-      { x: 0, z: -5.2, w: 18, d: 0.3 },                  // Rear Academic Way
-      { x: 0, z: 0.5, w: 18, d: 0.3 },                   // Middle Engineering Way
-      { x: 0, z: 5.2, w: 18, d: 0.3 },                   // Front Sports Concourse
-      { x: -3.25, z: 5.2, w: 6.0, d: 0.35 },             // Direct Sports Concourse connecting Ground & Court!
+      { x: 0, z: 0, w: 0.4, d: 26 },                     // Central Pedestrian Boulevard
+      { x: 0, z: -5.2, w: 20, d: 0.3 },                  // Rear Academic Way
+      { x: 0, z: 0.5, w: 20, d: 0.3 },                   // Middle Engineering Way
+      { x: 0, z: 5.2, w: 20, d: 0.3 },                   // Front Sports Concourse
+      { x: -3.25, z: 5.2, w: 6.5, d: 0.35 },             // Direct Sports Concourse connecting Ground & Court
     ];
     roads.forEach(r => {
       const geo = new THREE.PlaneGeometry(r.w, r.d);
@@ -210,6 +221,31 @@ const Campus3D = {
       group.position.set(p.x, 0, p.z);
       this.scene.add(group);
     });
+  },
+
+  /* ── Ambient AI Floating Particle System ─────────────── */
+  _createAIParticles() {
+    const count = 120;
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      positions[i * 3]     = (Math.random() - 0.5) * 26;
+      positions[i * 3 + 1] = Math.random() * 8 + 0.5;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 26;
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    const mat = new THREE.PointsMaterial({
+      color: 0x3B82F6,
+      size: 0.05,
+      transparent: true,
+      opacity: 0.45,
+      sizeAttenuation: true,
+    });
+
+    this.particles = new THREE.Points(geo, mat);
+    this.scene.add(this.particles);
   },
 
   /* ── 3D Building Blocks Construction ──────────────────── */
@@ -313,6 +349,28 @@ const Campus3D = {
         solar.rotation.x = -Math.PI / 2;
         solar.position.y = b.height + 0.09;
         group.add(solar);
+      }
+
+      // Cafeteria Outdoor Patio Tables & Umbrella Meshes
+      if (b.id === 'cafeteria') {
+        const patioGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.12);
+        const patioMat = new THREE.MeshStandardMaterial({ color: 0x0284C7 });
+        const umbrellaGeo = new THREE.ConeGeometry(0.25, 0.15, 6);
+        const umbrellaMat = new THREE.MeshStandardMaterial({ color: 0xE0F2FE });
+
+        const patioOffsets = [
+          { x: -b.width / 2 - 0.3, z: 0 },
+          { x:  b.width / 2 + 0.3, z: 0 },
+        ];
+        patioOffsets.forEach(p => {
+          const t = new THREE.Mesh(patioGeo, patioMat);
+          t.position.set(p.x, 0.06, p.z);
+          group.add(t);
+
+          const u = new THREE.Mesh(umbrellaGeo, umbrellaMat);
+          u.position.set(p.x, 0.35, p.z);
+          group.add(u);
+        });
       }
 
       // Generator Room Hazard Texture Striping
@@ -498,7 +556,7 @@ const Campus3D = {
       const el = document.getElementById('label-' + b.data.id);
       if (!el) return;
 
-      const labelOffset = (b.data.id === 'ground' || b.data.id === 'basketballCourt') ? 0.35 : b.data.height + 0.45;
+      const labelOffset = (b.data.id === 'ground' || b.data.id === 'basketballCourt') ? 0.38 : b.data.height + 0.48;
       const vec = new THREE.Vector3(b.data.x, b.currentY + labelOffset, b.data.z);
       vec.project(this.camera);
 
@@ -507,6 +565,15 @@ const Campus3D = {
       el.style.left = (vec.x * halfW + halfW) + 'px';
       el.style.top  = (-vec.y * halfH + halfH) + 'px';
     });
+  },
+
+  /* ── Camera Smooth Glide Pan Animation on Click ──────── */
+  focusBuilding(building) {
+    if (!building) return;
+    this.targetTargetPos = new THREE.Vector3(building.x, 0.5, building.z);
+    this.targetCamPos = new THREE.Vector3(building.x + 10, 10, building.z + 10);
+    this.isCameraPanning = true;
+    this.controls.autoRotate = false;
   },
 
   /* ── Interactions & Hover Float Elevation Animation ──── */
@@ -521,9 +588,12 @@ const Campus3D = {
 
     if (intersects.length > 0) {
       const bd = intersects[0].object.userData.buildingData;
-      if (typeof App !== 'undefined' && App.showBuilding) {
-        App.showBuilding(bd);
-      }
+      this.focusBuilding(bd);
+      setTimeout(() => {
+        if (typeof App !== 'undefined' && App.showBuilding) {
+          App.showBuilding(bd);
+        }
+      }, 350);
     }
   },
 
@@ -540,7 +610,7 @@ const Campus3D = {
         const hoveredMesh = intersects[0].object;
         this.buildings.forEach(b => {
           if (b.mesh === hoveredMesh) {
-            b.targetY = 0.35; // Smooth 3D elevation float!
+            b.targetY = 0.38; // Smooth 3D elevation float!
           } else {
             b.targetY = 0;
           }
@@ -568,6 +638,25 @@ const Campus3D = {
     this.animationId = requestAnimationFrame(this._animate.bind(this));
 
     const time = performance.now() * 0.001;
+
+    // Camera Glide Lerp
+    if (this.isCameraPanning && this.targetCamPos && this.targetTargetPos) {
+      this.camera.position.lerp(this.targetCamPos, 0.08);
+      this.controls.target.lerp(this.targetTargetPos, 0.08);
+      if (this.camera.position.distanceTo(this.targetCamPos) < 0.2) {
+        this.isCameraPanning = false;
+      }
+    }
+
+    // Floating AI Particles upward drift
+    if (this.particles) {
+      const pos = this.particles.geometry.attributes.position.array;
+      for (let i = 0; i < pos.length; i += 3) {
+        pos[i + 1] += Math.sin(time * 1.2 + i * 0.2) * 0.0025;
+        if (pos[i + 1] > 9) pos[i + 1] = 0.5;
+      }
+      this.particles.geometry.attributes.position.needsUpdate = true;
+    }
 
     // Smooth hover elevation lerp
     this.buildings.forEach(b => {
