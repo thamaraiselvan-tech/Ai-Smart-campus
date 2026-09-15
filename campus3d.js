@@ -35,8 +35,8 @@ const Campus3D = {
     this.scene.fog = new THREE.FogExp2(0xF1F5F9, 0.015);
 
     /* ── Camera Setup ───────────────────────────────────── */
-    this.camera = new THREE.PerspectiveCamera(36, w / h, 0.1, 250);
-    this.camera.position.set(22, 17, 22);
+    this.camera = new THREE.PerspectiveCamera(36, w / h, 0.1, 300);
+    this.camera.position.set(26, 20, 26);
     this.camera.lookAt(0, 0, 0);
 
     /* ── WebGL Renderer Setup ───────────────────────────── */
@@ -56,7 +56,7 @@ const Campus3D = {
     this.controls.maxPolarAngle = Math.PI / 2.3;
     this.controls.minPolarAngle = 0.16;
     this.controls.minDistance = 8;
-    this.controls.maxDistance = 42;
+    this.controls.maxDistance = 55;
     this.controls.autoRotate = true;
     this.controls.autoRotateSpeed = 0.35;
     this.controls.target.set(0, 0, 0);
@@ -85,21 +85,21 @@ const Campus3D = {
 
     // Direct Sunlight (Realistic 45° angle)
     const sunLight = new THREE.DirectionalLight(0xFFFBEB, 1.6);
-    sunLight.position.set(24, 32, 20);
+    sunLight.position.set(30, 38, 25);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.set(2048, 2048);
-    sunLight.shadow.camera.left   = -20;
-    sunLight.shadow.camera.right  =  20;
-    sunLight.shadow.camera.top    =  20;
-    sunLight.shadow.camera.bottom = -20;
+    sunLight.shadow.camera.left   = -28;
+    sunLight.shadow.camera.right  =  28;
+    sunLight.shadow.camera.top    =  28;
+    sunLight.shadow.camera.bottom = -28;
     sunLight.shadow.camera.near   =  2;
-    sunLight.shadow.camera.far    =  70;
+    sunLight.shadow.camera.far    =  90;
     sunLight.shadow.bias = -0.0002;
     this.scene.add(sunLight);
 
     // Architectural Rim Light (Highlighting building silhouettes!)
     const rimLight = new THREE.DirectionalLight(0x93C5FD, 0.45);
-    rimLight.position.set(-22, 18, -18);
+    rimLight.position.set(-28, 22, -24);
     this.scene.add(rimLight);
 
     /* ── Build Realistic Campus Infrastructure ──────────── */
@@ -127,8 +127,8 @@ const Campus3D = {
 
   /* ── Realistic Paved Asphalt Roads + White Lane Lines ──── */
   _createGroundAndRoads() {
-    // Ground Base
-    const groundGeo = new THREE.PlaneGeometry(38, 38);
+    // Expanded Ground Base (48x44)
+    const groundGeo = new THREE.PlaneGeometry(48, 44);
     const groundMat = new THREE.MeshStandardMaterial({
       color: 0xE2E8F0,
       roughness: 0.85,
@@ -140,23 +140,40 @@ const Campus3D = {
     ground.receiveShadow = true;
     this.scene.add(ground);
 
+    // Perimeter Stone Curb / Fence Edge (Bordering campus)
+    const borderGeo = new THREE.BoxGeometry(47.6, 0.1, 43.6);
+    const borderEdges = new THREE.EdgesGeometry(borderGeo);
+    const borderMat = new THREE.LineBasicMaterial({ color: 0x94A3B8, linewidth: 2 });
+    const borderWire = new THREE.LineSegments(borderEdges, borderMat);
+    borderWire.position.y = 0.05;
+    this.scene.add(borderWire);
+
     // Grid Overlay
-    const grid = new THREE.GridHelper(38, 38, 0xCBD5E1, 0xCBD5E1);
-    grid.material.opacity = 0.4;
+    const grid = new THREE.GridHelper(48, 44, 0xCBD5E1, 0xCBD5E1);
+    grid.material.opacity = 0.35;
     grid.material.transparent = true;
     grid.position.y = 0.001;
     this.scene.add(grid);
 
-    // Asphalt Road Network with White Lane Lines
-    const roadMat = new THREE.MeshStandardMaterial({ color: 0x64748B, roughness: 0.65 });
+    // Asphalt Road Network with White Center Lines & Crosswalk Stripes
+    const roadMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.65 });
     const dashMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
+    const medianMat = new THREE.MeshStandardMaterial({ color: 0x16A34A, roughness: 0.8 }); // Green median strip
 
+    // Primary & Secondary Road Segments
     const roads = [
-      { x: 0, z: 0, w: 0.45, d: 28 },                   // Central Boulevard
-      { x: 0, z: -5.2, w: 22, d: 0.35 },                // Rear Academic Way
-      { x: 0, z: 0.5, w: 22, d: 0.35 },                 // Middle Engineering Way
-      { x: 0, z: 5.2, w: 22, d: 0.35 },                 // Front Sports Concourse
-      { x: -3.25, z: 5.2, w: 7.0, d: 0.4 },             // Direct Sports Concourse connecting Ground & Court
+      // Central Boulevard Parkway (Double Lane running N-S)
+      { x: -0.35, z: 0, w: 0.45, d: 28 },               // Left Lane
+      { x:  0.35, z: 0, w: 0.45, d: 28 },               // Right Lane
+      // E-W Connecting Avenues
+      { x: 0, z: -5.2, w: 28, d: 0.4 },                 // Rear Academic Way
+      { x: 0, z: 0.5, w: 28, d: 0.4 },                  // Middle Engineering Way
+      { x: 0, z: 5.2, w: 28, d: 0.4 },                  // Front Sports Concourse
+      // Outer Perimeter Ring Road (N-S Loop)
+      { x: -13.5, z: 0, w: 0.4, d: 28 },                // West Ring Road
+      { x:  13.5, z: 0, w: 0.4, d: 28 },                // East Ring Road
+      { x: 0, z: -13.5, w: 27.4, d: 0.4 },              // North Ring Road
+      { x: 0, z:  13.5, w: 27.4, d: 0.4 },              // South Entrance Parkway
     ];
 
     roads.forEach(r => {
@@ -167,9 +184,9 @@ const Campus3D = {
       road.receiveShadow = true;
       this.scene.add(road);
 
-      // White Center Line Markings
+      // White Center Markings for Wide E-W Avenues
       if (r.w > 5) {
-        const lineGeo = new THREE.PlaneGeometry(r.w, 0.04);
+        const lineGeo = new THREE.PlaneGeometry(r.w - 1, 0.035);
         const line = new THREE.Mesh(lineGeo, dashMat);
         line.rotation.x = -Math.PI / 2;
         line.position.set(r.x, 0.007, r.z);
@@ -177,61 +194,185 @@ const Campus3D = {
       }
     });
 
-    // Central Green Plaza Pavers
-    const plazaGeo = new THREE.PlaneGeometry(3.2, 3.2);
+    // Central Boulevard Median Grass Strip
+    const medianGeo = new THREE.PlaneGeometry(0.2, 28);
+    const median = new THREE.Mesh(medianGeo, medianMat);
+    median.rotation.x = -Math.PI / 2;
+    median.position.set(0, 0.007, 0);
+    median.receiveShadow = true;
+    this.scene.add(median);
+
+    // Pedestrian Zebra Crosswalk Markings at Intersections
+    const crosswalkZs = [-5.2, 0.5, 5.2];
+    crosswalkZs.forEach(z => {
+      for (let stripe = -0.4; stripe <= 0.4; stripe += 0.16) {
+        const sGeo = new THREE.PlaneGeometry(0.1, 0.35);
+        const sMesh = new THREE.Mesh(sGeo, dashMat);
+        sMesh.rotation.x = -Math.PI / 2;
+        sMesh.position.set(stripe, 0.008, z);
+        this.scene.add(sMesh);
+      }
+    });
+
+    // KS Block Executive Roundabout & Entrance Drop-off Plaza
+    const plazaGeo = new THREE.CylinderGeometry(1.4, 1.4, 0.02, 32);
     const plazaMat = new THREE.MeshStandardMaterial({ color: 0xCBD5E1, roughness: 0.6 });
     const plaza = new THREE.Mesh(plazaGeo, plazaMat);
-    plaza.rotation.x = -Math.PI / 2;
-    plaza.position.set(0, 0.006, 0);
+    plaza.position.set(0, 0.01, -2.5);
     plaza.receiveShadow = true;
     this.scene.add(plaza);
+
+    // Roundabout Center Garden Island
+    const islandGeo = new THREE.CylinderGeometry(0.65, 0.65, 0.04, 24);
+    const islandMat = new THREE.MeshStandardMaterial({ color: 0x16A34A, roughness: 0.7 });
+    const island = new THREE.Mesh(islandGeo, islandMat);
+    island.position.set(0, 0.02, -2.5);
+    island.receiveShadow = true;
+    this.scene.add(island);
+
+    // Cafeteria & Mechanical Parking Lot with Stall Stripes
+    const parkingGeo = new THREE.PlaneGeometry(3.6, 2.2);
+    const parkingMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.7 });
+    const parking = new THREE.Mesh(parkingGeo, parkingMat);
+    parking.rotation.x = -Math.PI / 2;
+    parking.position.set(10.2, 0.005, 5.2);
+    parking.receiveShadow = true;
+    this.scene.add(parking);
+
+    // Parking Lines
+    for (let p = -1.4; p <= 1.4; p += 0.7) {
+      const pLineGeo = new THREE.PlaneGeometry(0.04, 1.8);
+      const pLine = new THREE.Mesh(pLineGeo, dashMat);
+      pLine.rotation.x = -Math.PI / 2;
+      pLine.position.set(10.2 + p, 0.007, 5.2);
+      this.scene.add(pLine);
+    }
   },
 
-  /* ── Trees & Greenery Groves ──────────────────────────── */
+  /* ── Rich 3D Campus Forestry & Tree Avenues ──────────────── */
   _createCampusTreeAccents() {
-    const treePositions = [
-      { x: -3.4, z: -5.2 }, { x: 3.4, z: -5.2 },
-      { x: -3.4, z: -2.0 }, { x: 3.4, z: -2.0 },
-      { x: -3.4, z:  0.5 }, { x: 3.4, z:  0.5 },
-      { x: -3.4, z:  3.0 }, { x: 3.4, z:  3.0 },
-      { x:  2.5, z:  5.2 },
-    ];
-
-    const trunkGeo = new THREE.CylinderGeometry(0.06, 0.08, 0.45);
     const trunkMat = new THREE.MeshStandardMaterial({ color: 0x78350F, roughness: 0.9 });
-    const foliageGeo1 = new THREE.SphereGeometry(0.38, 8, 8);
-    const foliageGeo2 = new THREE.SphereGeometry(0.28, 8, 8);
-    const foliageMat1 = new THREE.MeshStandardMaterial({ color: 0x15803D, roughness: 0.6 });
-    const foliageMat2 = new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.6 });
 
-    treePositions.forEach(p => {
+    // Tree Materials Palette
+    const leafMats = {
+      emerald: new THREE.MeshStandardMaterial({ color: 0x15803D, roughness: 0.6 }),
+      forest:  new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.6 }),
+      lime:    new THREE.MeshStandardMaterial({ color: 0x22C55E, roughness: 0.5 }),
+      golden:  new THREE.MeshStandardMaterial({ color: 0x65A30D, roughness: 0.6 }),
+    };
+
+    // Helper to spawn varied 3D tree models
+    const spawnTree = (x, z, type = 'shade', scale = 1.0) => {
       const group = new THREE.Group();
-      const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-      trunk.position.y = 0.22;
-      trunk.castShadow = true;
-      group.add(trunk);
 
-      const f1 = new THREE.Mesh(foliageGeo1, foliageMat1);
-      f1.position.y = 0.58;
-      f1.castShadow = true;
-      group.add(f1);
+      if (type === 'palm') {
+        // Royal Palm Tree: Slender curving trunk + top fronds
+        const tGeo = new THREE.CylinderGeometry(0.04 * scale, 0.06 * scale, 0.8 * scale);
+        const trunk = new THREE.Mesh(tGeo, trunkMat);
+        trunk.position.y = (0.4 * scale);
+        trunk.castShadow = true;
+        group.add(trunk);
 
-      const f2 = new THREE.Mesh(foliageGeo2, foliageMat2);
-      f2.position.y = 0.82;
-      f2.castShadow = true;
-      group.add(f2);
+        const crownGeo = new THREE.ConeGeometry(0.42 * scale, 0.35 * scale, 6);
+        const crown = new THREE.Mesh(crownGeo, leafMats.lime);
+        crown.position.y = (0.85 * scale);
+        crown.castShadow = true;
+        group.add(crown);
+      } else if (type === 'cypress') {
+        // Conical Cypress / Pine Tree
+        const tGeo = new THREE.CylinderGeometry(0.05 * scale, 0.07 * scale, 0.5 * scale);
+        const trunk = new THREE.Mesh(tGeo, trunkMat);
+        trunk.position.y = (0.25 * scale);
+        trunk.castShadow = true;
+        group.add(trunk);
 
-      group.position.set(p.x, 0, p.z);
+        for (let i = 0; i < 3; i++) {
+          const coneGeo = new THREE.ConeGeometry((0.35 - i * 0.08) * scale, 0.45 * scale, 8);
+          const cone = new THREE.Mesh(coneGeo, i % 2 === 0 ? leafMats.forest : leafMats.emerald);
+          cone.position.y = (0.55 + i * 0.3) * scale;
+          cone.castShadow = true;
+          group.add(cone);
+        }
+      } else if (type === 'ornamental') {
+        // Low flowering courtyard bush
+        const bGeo = new THREE.SphereGeometry(0.28 * scale, 8, 8);
+        const bush = new THREE.Mesh(bGeo, leafMats.golden);
+        bush.position.y = (0.25 * scale);
+        bush.castShadow = true;
+        group.add(bush);
+      } else {
+        // Classic Dome Shade Tree
+        const tGeo = new THREE.CylinderGeometry(0.06 * scale, 0.08 * scale, 0.48 * scale);
+        const trunk = new THREE.Mesh(tGeo, trunkMat);
+        trunk.position.y = (0.24 * scale);
+        trunk.castShadow = true;
+        group.add(trunk);
+
+        const f1Geo = new THREE.SphereGeometry(0.38 * scale, 8, 8);
+        const f1 = new THREE.Mesh(f1Geo, leafMats.emerald);
+        f1.position.y = (0.6 * scale);
+        f1.castShadow = true;
+        group.add(f1);
+
+        const f2Geo = new THREE.SphereGeometry(0.28 * scale, 8, 8);
+        const f2 = new THREE.Mesh(f2Geo, leafMats.forest);
+        f2.position.y = (0.84 * scale);
+        f2.castShadow = true;
+        group.add(f2);
+      }
+
+      group.position.set(x, 0, z);
       this.scene.add(group);
+    };
+
+    // 1. Central Boulevard Palms & Shade Trees
+    const boulevardZs = [-11, -8.5, -6, -3.5, 2, 4.5, 7, 9.5, 12];
+    boulevardZs.forEach(z => {
+      spawnTree(-1.1, z, 'palm', 1.0);
+      spawnTree( 1.1, z, 'palm', 1.0);
     });
+
+    // 2. Courtyard & Academic Gardens (Between Buildings)
+    const gardenTreePos = [
+      { x: -3.4, z: -5.2, type: 'shade' }, { x: 3.4, z: -5.2, type: 'shade' },
+      { x: -3.4, z: -2.0, type: 'cypress' }, { x: 3.4, z: -2.0, type: 'cypress' },
+      { x: -3.4, z:  0.5, type: 'shade' }, { x: 3.4, z:  0.5, type: 'shade' },
+      { x: -3.4, z:  3.0, type: 'shade' }, { x: 3.4, z:  3.0, type: 'shade' },
+      { x: -9.8, z: -4.5, type: 'cypress' }, { x: 9.8, z: -4.5, type: 'cypress' },
+      { x: -9.8, z:  0.5, type: 'shade' },   { x: 9.8, z:  0.5, type: 'shade' },
+      { x:  0.0, z: -2.5, type: 'ornamental', scale: 1.2 }, // Roundabout centerpiece tree
+    ];
+    gardenTreePos.forEach(p => spawnTree(p.x, p.z, p.type || 'shade', p.scale || 1.0));
+
+    // 3. Sports & Athletics Green Belt (Surrounding Ground & Basketball Court)
+    const sportsTreePos = [
+      { x: -8.5, z:  8.2 }, { x: -6.5, z:  8.2 }, { x: -4.5, z:  8.2 }, { x: -2.5, z:  8.2 },
+      { x: -8.8, z:  5.2 }, { x: -8.8, z:  3.2 }, { x: -8.8, z:  7.2 },
+      { x:  1.8, z:  7.8 }, { x:  3.2, z:  7.8 },
+    ];
+    sportsTreePos.forEach(p => spawnTree(p.x, p.z, 'shade', 1.1));
+
+    // 4. Outer Campus Perimeter Tree Ring (Neat Cypress & Shade Tree Belt)
+    for (let x = -20; x <= 20; x += 3.5) {
+      spawnTree(x, -16.5, 'cypress', 1.05);
+      spawnTree(x,  16.5, 'cypress', 1.05);
+    }
+    for (let z = -14; z <= 14; z += 3.5) {
+      spawnTree(-20.5, z, 'shade', 1.0);
+      spawnTree( 20.5, z, 'shade', 1.0);
+    }
   },
 
   /* ── Street Lamp Posts ────────────────────────────────── */
   _createStreetLamps() {
     const lampPositions = [
-      { x: -0.35, z: -3.5 }, { x: 0.35, z: -3.5 },
-      { x: -0.35, z: -1.0 }, { x: 0.35, z: -1.0 },
-      { x: -0.35, z:  2.5 }, { x: 0.35, z:  2.5 },
+      { x: -0.65, z: -9.0 }, { x: 0.65, z: -9.0 },
+      { x: -0.65, z: -5.2 }, { x: 0.65, z: -5.2 },
+      { x: -0.65, z: -1.0 }, { x: 0.65, z: -1.0 },
+      { x: -0.65, z:  2.5 }, { x: 0.65, z:  2.5 },
+      { x: -0.65, z:  7.5 }, { x: 0.65, z:  7.5 },
+      { x: -0.65, z: 11.5 }, { x: 0.65, z: 11.5 },
+      { x: -6.5,  z:  2.8 }, { x: 6.5,  z:  2.8 },
     ];
 
     const postGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.65);
