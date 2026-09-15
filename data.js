@@ -1,6 +1,6 @@
 /* ============================================================
    Saranathan College of Engineering — Smart Campus Data Model
-   Institutional Blocks, Sub-surface Rainwater & Solar Intelligence
+   Institutional Master Plan & Sub-surface Rainwater Intelligence
    ============================================================ */
 
 const CampusData = {
@@ -12,50 +12,41 @@ const CampusData = {
     location: 'Venkateswara Nagar, Panjappur, Tiruchirappalli',
   },
 
-  /* ── Campus 3D Blocks (Off-center Ground & Basketball Court) ─ */
+  /* ── Campus 3D Master Plan Blocks (Sports Complex Clustered) ─ */
   buildings: [
+    {
+      id: 'ksBlock',
+      name: 'KS block',
+      subtitle: 'Computer Science & AI Labs / Executive Admin Tower',
+      status: 'normal',
+      x:  0.0, z: -5.2, width: 3.6, depth: 2.2, height: 3.0,
+      occupancy: 94, power: 64.2, water: 14.8,
+      solarGeneration: 32.0, rainwaterCapacity: 22000, rainwaterLevel: 88, aqi: 35, temp: 23.0, hvacEfficiency: 96,
+    },
     {
       id: 'rvBlock',
       name: 'RV block',
       subtitle: 'Electronics & Communication / Information Tech',
       status: 'normal',
-      x: -4.0, z: -2.8, width: 3.2, depth: 2.2, height: 2.6,
+      x: -6.5, z: -4.5, width: 3.2, depth: 2.2, height: 2.6,
       occupancy: 88, power: 58.4, water: 12.1,
       solarGeneration: 24.5, rainwaterCapacity: 18000, rainwaterLevel: 82, aqi: 38, temp: 23.5, hvacEfficiency: 94,
-    },
-    {
-      id: 'ksBlock',
-      name: 'KS block',
-      subtitle: 'Computer Science & AI Labs / Executive Admin',
-      status: 'normal',
-      x:  0.0, z: -3.2, width: 3.6, depth: 2.0, height: 3.0,
-      occupancy: 94, power: 64.2, water: 14.8,
-      solarGeneration: 32.0, rainwaterCapacity: 22000, rainwaterLevel: 88, aqi: 35, temp: 23.0, hvacEfficiency: 96,
     },
     {
       id: 'jsBlock',
       name: 'JS block',
       subtitle: 'Electrical & Electronics / Basic Sciences',
       status: 'alert',
-      x:  4.2, z: -2.8, width: 3.0, depth: 2.2, height: 2.4,
+      x: -6.5, z:  0.5, width: 3.0, depth: 2.2, height: 2.4,
       occupancy: 76, power: 42.0, water: 19.5,
       solarGeneration: 18.2, rainwaterCapacity: 15000, rainwaterLevel: 64, aqi: 45, temp: 24.2, hvacEfficiency: 88,
-    },
-    {
-      id: 'cafeteria',
-      name: 'Cafeteria',
-      subtitle: 'Central Dining Pavilion & Student Commons',
-      status: 'normal',
-      x: -3.6, z:  2.4, width: 2.8, depth: 2.0, height: 1.3,
-      occupancy: 68, power: 28.5, water: 24.4,
-      solarGeneration: 14.0, rainwaterCapacity: 12000, rainwaterLevel: 75, aqi: 42, temp: 25.0, hvacEfficiency: 91,
     },
     {
       id: 'generatorRoom',
       name: 'Generator room',
       subtitle: 'Power Substation & HV Grid Transformer',
       status: 'normal',
-      x:  0.0, z:  4.5, width: 2.0, depth: 1.5, height: 1.2,
+      x:  6.2, z: -4.5, width: 2.0, depth: 1.5, height: 1.2,
       occupancy: 8,  power: 118.0, water: 1.8,
       solarGeneration: 8.5,  rainwaterCapacity: 5000,  rainwaterLevel: 90, aqi: 50, temp: 27.5, hvacEfficiency: 85,
     },
@@ -64,31 +55,42 @@ const CampusData = {
       name: 'Mech Block',
       subtitle: 'Mechanical Workshop & CNC Automation Labs',
       status: 'normal',
-      x:  3.6, z:  2.4, width: 3.4, depth: 2.4, height: 1.9,
+      x:  6.2, z:  0.5, width: 3.4, depth: 2.4, height: 1.9,
       occupancy: 82, power: 72.8, water: 8.6,
       solarGeneration: 28.0, rainwaterCapacity: 20000, rainwaterLevel: 78, aqi: 44, temp: 24.8, hvacEfficiency: 90,
+    },
+    {
+      id: 'cafeteria',
+      name: 'Cafeteria',
+      subtitle: 'Central Dining Pavilion & Student Commons',
+      status: 'normal',
+      x:  5.5, z:  5.2, width: 2.8, depth: 2.0, height: 1.3,
+      occupancy: 68, power: 28.5, water: 24.4,
+      solarGeneration: 14.0, rainwaterCapacity: 12000, rainwaterLevel: 75, aqi: 42, temp: 25.0, hvacEfficiency: 91,
+    },
+
+    /* ── Sports & Athletics Complex (Clustered Together) ──── */
+    {
+      id: 'ground',
+      name: 'Ground',
+      subtitle: 'Main College Sports Turf & Athletic Track Oval',
+      status: 'powered_down',
+      x: -5.5, z:  5.2, width: 4.6, depth: 3.2, height: 0.08,
+      occupancy: 20, power: 2.4,  water: 0.0,
+      solarGeneration: 0.0,  rainwaterCapacity: 35000, rainwaterLevel: 95, aqi: 25, temp: 28.0, hvacEfficiency: 100,
     },
     {
       id: 'basketballCourt',
       name: 'Basketball Court',
       subtitle: 'Outdoor Acrylic Court & Underground Rainwater Cistern',
       status: 'normal',
-      x:  7.2, z:  2.2, width: 3.4, depth: 2.2, height: 0.1,
+      x: -1.0, z:  5.2, width: 3.4, depth: 2.2, height: 0.1,
       occupancy: 45, power: 4.8,  water: 0.0,
       solarGeneration: 16.5, rainwaterCapacity: 45000, rainwaterLevel: 92, aqi: 28, temp: 27.0, hvacEfficiency: 100,
     },
-    {
-      id: 'ground',
-      name: 'Ground',
-      subtitle: 'Main College Sports Turf & Athletic Track Oval',
-      status: 'powered_down',
-      x: -7.5, z:  2.2, width: 4.6, depth: 3.2, height: 0.08,
-      occupancy: 20, power: 2.4,  water: 0.0,
-      solarGeneration: 0.0,  rainwaterCapacity: 35000, rainwaterLevel: 95, aqi: 25, temp: 28.0, hvacEfficiency: 100,
-    },
   ],
 
-  /* ── Detailed Room Inspection Data (Dynamic Filter Categories) ── */
+  /* ── Detailed Room Inspection Data ──────────────────────── */
   rooms: [
     { id: 'r101', name: 'JS-101 (Power Systems Lab)', category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '23 °C', capacity: 85, lastAction: '11:42 AM — Smart HVAC optimized to 23 °C' },
     { id: 'r102', name: 'JS-102 (Embedded Systems Lab)', category: 'occupied hvac', occupied: true,  lights: 'on',  ac: 'on',  temp: '23 °C', capacity: 92, lastAction: '11:35 AM — Auto-occupancy verified' },
@@ -119,7 +121,7 @@ const CampusData = {
 
   /* ── Real-time Campus Ticker ───────────────────────────── */
   ticker: [
-    { icon: '🏀', text: 'Basketball Court — Sub-surface rainwater harvesting tank at 92% capacity (45,000 L reservoir)', time: '11:50 AM' },
+    { icon: '🏀', text: 'Basketball Court & Ground — Sports Complex sub-surface cistern at 92% capacity (45,000 L reservoir)', time: '11:50 AM' },
     { icon: '☀️', text: 'Roof Solar Array — Generating 141.7 kW total across campus blocks', time: '11:46 AM' },
     { icon: '⚡', text: 'KS Block — Computer Lab 3 HVAC throttled to eco mode', time: '11:45 AM' },
     { icon: '💧', text: 'JS Block Tank — Minor flow variation (+18%) flagged for check', time: '11:38 AM' },
