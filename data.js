@@ -1,101 +1,152 @@
 /* ============================================================
-   CampusNexus — Hardcoded Demo Data
-   All numbers are pre-loaded for the static demo. No backend.
+   Saranathan College of Engineering — Smart Campus Data Model
    ============================================================ */
 
 const CampusData = {
 
-  /* ── Buildings ──────────────────────────────────────────── */
+  /* ── Institution Info ───────────────────────────────────── */
+  institution: {
+    name: 'Saranathan College of Engineering',
+    tagline: 'Autonomous AI-Powered Smart Campus Intelligence',
+    location: 'Venkateswara Nagar, Panjappur, Tiruchirappalli',
+  },
+
+  /* ── Campus 3D Blocks (7 Requested Institutions Blocks) ─── */
   buildings: [
-    { id: 'blockA', name: 'Block A',          status: 'normal',       x: -3.2, z: -2.4, width: 2.6, depth: 1.8, height: 1.6, occupancy: 72, power: 45.2, water: 8.2 },
-    { id: 'blockB', name: 'Block B',          status: 'normal',       x:  0.5, z: -2.8, width: 2.0, depth: 2.0, height: 2.2, occupancy: 85, power: 62.0, water: 12.4 },
-    { id: 'blockC', name: 'Block C',          status: 'alert',        x:  3.8, z: -1.0, width: 2.4, depth: 1.6, height: 1.8, occupancy: 64, power: 38.0, water: 18.4 },
-    { id: 'blockD', name: 'Block D',          status: 'powered_down', x: -2.8, z:  1.8, width: 1.8, depth: 2.2, height: 1.2, occupancy: 0,  power: 0.5,  water: 0.2 },
-    { id: 'library', name: 'Library',         status: 'normal',       x:  0.8, z:  1.2, width: 3.0, depth: 2.0, height: 1.6, occupancy: 91, power: 28.0, water: 3.1 },
-    { id: 'cafeteria', name: 'Cafeteria',     status: 'normal',       x: -0.8, z:  4.2, width: 2.5, depth: 1.5, height: 1.0, occupancy: 45, power: 22.0, water: 15.6 },
-    { id: 'gym', name: 'Sports Complex',      status: 'powered_down', x:  3.8, z:  3.2, width: 2.2, depth: 2.6, height: 1.4, occupancy: 0,  power: 1.2,  water: 0.8 },
-    { id: 'admin', name: 'Admin Block',       status: 'normal',       x: -4.2, z:  3.8, width: 1.6, depth: 1.6, height: 2.4, occupancy: 78, power: 18.0, water: 4.2 },
+    {
+      id: 'rvBlock',
+      name: 'RV block',
+      subtitle: 'Electronics & Communication / Information Tech',
+      status: 'normal',
+      x: -4.2, z: -2.8, width: 3.2, depth: 2.2, height: 2.4,
+      occupancy: 88, power: 58.4, water: 12.1
+    },
+    {
+      id: 'ksBlock',
+      name: 'KS block',
+      subtitle: 'Computer Science & AI Labs / Admin Wing',
+      status: 'normal',
+      x:  0.8, z: -3.2, width: 3.6, depth: 2.0, height: 2.8,
+      occupancy: 94, power: 64.2, water: 14.8
+    },
+    {
+      id: 'jsBlock',
+      name: 'JS block',
+      subtitle: 'Electrical & Electronics / Basic Sciences',
+      status: 'alert',
+      x:  4.6, z: -1.8, width: 3.0, depth: 2.2, height: 2.2,
+      occupancy: 76, power: 42.0, water: 19.5
+    },
+    {
+      id: 'cafeteria',
+      name: 'Cafeteria',
+      subtitle: 'Central Dining Pavilion & Food Court',
+      status: 'normal',
+      x: -4.0, z:  2.4, width: 2.8, depth: 2.0, height: 1.2,
+      occupancy: 68, power: 28.5, water: 24.4
+    },
+    {
+      id: 'generatorRoom',
+      name: 'Generator room',
+      subtitle: 'Power Substation & HV Transformer Grid',
+      status: 'normal',
+      x: -1.0, z:  4.8, width: 2.0, depth: 1.5, height: 1.1,
+      occupancy: 8,  power: 118.0, water: 1.8
+    },
+    {
+      id: 'mechBlock',
+      name: 'Mech Block',
+      subtitle: 'Mechanical Workshop & CNC Automation Labs',
+      status: 'normal',
+      x:  3.8, z:  2.8, width: 3.4, depth: 2.4, height: 1.8,
+      occupancy: 82, power: 72.8, water: 8.6
+    },
+    {
+      id: 'ground',
+      name: 'Ground',
+      subtitle: 'Main College Sports Turf & Track Oval',
+      status: 'powered_down',
+      x:  0.0, z:  0.2, width: 4.4, depth: 3.0, height: 0.08,
+      occupancy: 20, power: 2.4,  water: 0.0
+    },
   ],
 
-  /* ── Room-level detail (Block C — the featured building) ─ */
+  /* ── Detailed Room Inspection (Featured: JS Block) ──────── */
   rooms: [
-    { name: 'Room 201',      occupied: true,  lights: 'on',  ac: 'on',  lastAction: '10:42 AM — AC set to 24 °C' },
-    { name: 'Room 202',      occupied: true,  lights: 'on',  ac: 'on',  lastAction: '10:38 AM — Lights auto ON' },
-    { name: 'Room 203',      occupied: false, lights: 'off', ac: 'off', lastAction: '10:15 AM — Lights OFF (empty 12 min)' },
-    { name: 'Room 204',      occupied: false, lights: 'off', ac: 'off', lastAction: '09:58 AM — AC shutoff (empty 15 min)' },
-    { name: 'Room 205',      occupied: true,  lights: 'on',  ac: 'on',  lastAction: '10:30 AM — AC set to 23 °C' },
-    { name: 'Lab 1',         occupied: true,  lights: 'on',  ac: 'on',  lastAction: '09:00 AM — Scheduled power-on' },
-    { name: 'Lab 2',         occupied: false, lights: 'off', ac: 'off', lastAction: '10:20 AM — Full shutoff (no class)' },
-    { name: 'Seminar Hall',  occupied: true,  lights: 'on',  ac: 'on',  lastAction: '10:00 AM — Occupancy detected' },
+    { name: 'JS-101 (Power Systems Lab)', occupied: true,  lights: 'on',  ac: 'on',  lastAction: '11:42 AM — Smart HVAC optimized to 24 °C' },
+    { name: 'JS-102 (Embedded Systems)',  occupied: true,  lights: 'on',  ac: 'on',  lastAction: '11:35 AM — Auto-occupancy verified' },
+    { name: 'JS-201 (High Voltage Lab)',  occupied: false, lights: 'off', ac: 'off', lastAction: '11:15 AM — Lights OFF (idle 15 min)' },
+    { name: 'JS-202 (Lecture Hall 4)',    occupied: false, lights: 'off', ac: 'off', lastAction: '10:58 AM — AC auto shutoff (no class)' },
+    { name: 'JS-301 (IoT Research Lab)',  occupied: true,  lights: 'on',  ac: 'on',  lastAction: '11:30 AM — Workstation load normal' },
+    { name: 'JS Simulation Lab',         occupied: true,  lights: 'on',  ac: 'on',  lastAction: '10:00 AM — Scheduled research run' },
+    { name: 'JS Seminar Hall',           occupied: false, lights: 'off', ac: 'off', lastAction: '11:20 AM — Session ended, standby mode' },
+    { name: 'JS Faculty Wing',           occupied: true,  lights: 'on',  ac: 'on',  lastAction: '11:00 AM — Ambient lighting adjusted' },
   ],
 
-  /* ── KPI cards ─────────────────────────────────────────── */
+  /* ── Key Performance Metrics ───────────────────────────── */
   kpi: {
     energySaved: {
-      value: 142,
+      value: 185,
       unit: 'kWh',
-      trend: [80, 95, 88, 110, 105, 120, 115, 130, 125, 138, 135, 142],
+      trend: [95, 110, 102, 130, 125, 145, 140, 160, 155, 172, 168, 185],
     },
     waterPrevented: {
-      value: 1240,
+      value: 1480,
       unit: 'L',
-      trend: [500, 650, 720, 800, 880, 950, 1020, 1080, 1120, 1180, 1210, 1240],
+      trend: [600, 750, 820, 930, 1020, 1100, 1190, 1280, 1340, 1410, 1440, 1480],
     },
   },
 
-  /* ── Nexus Insight (the pitch-winning card) ────────────── */
-  nexusInsight: "Block C's water pump was rescheduled to 1–4 AM (off-peak), saving an estimated ₹380/day by pairing water demand with idle electricity capacity.",
+  /* ── Official Institutional AI Insight ─────────────────── */
+  nexusInsight: "Saranathan AI Engine synchronized Generator Room peak shaving with JS Block lab schedules, offsetting ₹540/day in peak tariff charges while maintaining thermal comfort across all blocks.",
 
-  /* ── Ticker items ──────────────────────────────────────── */
+  /* ── Real-time Campus Ticker ───────────────────────────── */
   ticker: [
-    { icon: '⚡', text: 'Lights OFF — Room 204 (empty 12 min)',            time: '10:15 AM' },
-    { icon: '💧', text: 'Leak flagged — Tank 2, flow +34 % above baseline', time: '10:08 AM' },
-    { icon: '⚡', text: 'AC shutoff — Lab 2 (no scheduled class)',          time: '10:02 AM' },
-    { icon: '💧', text: 'Pump rescheduled — Block C to off-peak (1–4 AM)',  time: '09:45 AM' },
-    { icon: '⚡', text: 'Sports Complex powered down — zero occupancy',     time: '09:30 AM' },
+    { icon: '⚡', text: 'KS Block — Computer Lab 3 HVAC throttled to eco mode', time: '11:45 AM' },
+    { icon: '💧', text: 'JS Block Tank — Minor flow variation (+18%) flagged for check', time: '11:38 AM' },
+    { icon: '⚡', text: 'RV Block — Room 204 lights auto OFF after 12 min idle', time: '11:25 AM' },
+    { icon: '🌱', text: 'Ground — Smart turf drip irrigation complete (05:30–06:00 AM)', time: '06:00 AM' },
+    { icon: '⚡', text: 'Generator Room — Main grid sync check passed 100% clean', time: '10:15 AM' },
   ],
 
-  /* ── 24-hour power chart (building drill-down) ─────────── */
+  /* ── 24-Hour Campus Power Profile ──────────────────────── */
   powerChart24h: {
     labels: [
       '12 AM','1 AM','2 AM','3 AM','4 AM','5 AM','6 AM','7 AM',
       '8 AM','9 AM','10 AM','11 AM','12 PM','1 PM','2 PM','3 PM',
-      '4 PM','5 PM','6 PM','7 PM','8 PM','9 PM','10 PM','11 PM',
+      '4 PM','5 PM','6 PM','7 PM','8 PM','9 PM','10 PM','11 PM'
     ],
-    data: [12, 10, 8, 6, 5, 5, 8, 22, 38, 45, 52, 48, 42, 40, 44, 28, 42, 38, 28, 20, 15, 14, 13, 12],
-    //                                                                   ↑ auto-shutoff dip at 3 PM (index 15)
+    data: [15, 12, 10, 8, 8, 12, 28, 48, 85, 112, 128, 120, 110, 105, 118, 72, 105, 88, 52, 35, 24, 20, 18, 16],
     shutoffIndex: 15,
   },
 
-  /* ── Water / pipe network ──────────────────────────────── */
+  /* ── Institutional Water Distribution Graph ────────────── */
   waterNetwork: {
     nodes: [
-      { id: 'mainTank',   name: 'Main Tank',    rx: 0.13, ry: 0.22, flow: 24.2, status: 'normal' },
-      { id: 'junction1',  name: 'Junction A',   rx: 0.40, ry: 0.30, flow: 14.8, status: 'normal' },
-      { id: 'tank2',      name: 'Tank 2',       rx: 0.70, ry: 0.22, flow: 18.4, status: 'anomaly', expected: '11–14' },
-      { id: 'junction2',  name: 'Junction B',   rx: 0.40, ry: 0.68, flow: 9.4,  status: 'normal' },
-      { id: 'blockCTank', name: 'Block C Tank',  rx: 0.70, ry: 0.68, flow: 6.1,  status: 'normal' },
+      { id: 'mainTank',      name: 'Central Tank',      rx: 0.12, ry: 0.25, flow: 32.5, status: 'normal' },
+      { id: 'rvWater',       name: 'RV Block Tank',     rx: 0.40, ry: 0.20, flow: 12.1, status: 'normal' },
+      { id: 'jsWater',       name: 'JS Block Tank',     rx: 0.72, ry: 0.22, flow: 19.5, status: 'anomaly', expected: '11–14' },
+      { id: 'cafeteriaWater',name: 'Cafeteria Junction', rx: 0.40, ry: 0.70, flow: 24.4, status: 'normal' },
+      { id: 'mechWater',     name: 'Mech Block Line',   rx: 0.72, ry: 0.70, flow: 8.6,  status: 'normal' },
     ],
     connections: [
-      ['mainTank',  'junction1'],
-      ['junction1', 'tank2'],
-      ['mainTank',  'junction2'],
-      ['junction2', 'blockCTank'],
-      ['junction1', 'junction2'],
+      ['mainTank',       'rvWater'],
+      ['rvWater',        'jsWater'],
+      ['mainTank',       'cafeteriaWater'],
+      ['cafeteriaWater', 'mechWater'],
+      ['rvWater',        'cafeteriaWater'],
     ],
   },
 
-  /* ── Alerts / action log ───────────────────────────────── */
+  /* ── Action & Anomaly Log ──────────────────────────────── */
   alerts: [
-    { type: 'water',  text: 'Leak flagged — Tank 2 flow 34 % above 7-day baseline',               time: '10:08 AM',       status: 'Needs review' },
-    { type: 'energy', text: 'Lights OFF — Room 204 (empty 12 min)',                                time: '10:15 AM',       status: 'Auto-resolved' },
-    { type: 'energy', text: 'AC shutoff — Lab 2 (no scheduled class)',                             time: '10:02 AM',       status: 'Auto-resolved' },
-    { type: 'water',  text: 'Pump rescheduled — Block C to off-peak window (1–4 AM)',              time: '09:45 AM',       status: 'Auto-resolved' },
-    { type: 'energy', text: 'Sports Complex full power-down — zero occupancy detected',            time: '09:30 AM',       status: 'Auto-resolved' },
-    { type: 'energy', text: 'Block D powered down — weekend, no scheduled activity',               time: '08:00 AM',       status: 'Auto-resolved' },
-    { type: 'water',  text: 'Morning flow spike — within expected range for Monday',               time: '07:30 AM',       status: 'Auto-resolved' },
-    { type: 'energy', text: 'Block A AC pre-cooling started — first class at 08:30',               time: '07:15 AM',       status: 'Auto-resolved' },
-    { type: 'energy', text: 'Night mode activated — campus-wide dimming',                          time: '11:00 PM (prev)', status: 'Auto-resolved' },
-    { type: 'water',  text: 'Tank 1 refill scheduled — overnight low-demand window',               time: '10:30 PM (prev)', status: 'Auto-resolved' },
+    { type: 'water',  text: 'JS Block line flagged — flow 19.5 L/min exceeds baseline range (11–14 L/min)', time: '11:38 AM', status: 'Needs review' },
+    { type: 'energy', text: 'KS Block Lab 3 — Intelligent HVAC setpoint auto-tuned for 45 students',       time: '11:45 AM', status: 'Auto-resolved' },
+    { type: 'energy', text: 'RV Block Lecture Hall 2 — Lights OFF automatically after 12 min zero motion',  time: '11:25 AM', status: 'Auto-resolved' },
+    { type: 'energy', text: 'Generator Room — Automatic peak shaving activated during high college demand',  time: '10:30 AM', status: 'Auto-resolved' },
+    { type: 'water',  text: 'Cafeteria main intake — Flow stabilized post lunch prep peak',                 time: '10:15 AM', status: 'Auto-resolved' },
+    { type: 'energy', text: 'Mech Block CNC Lab — Equipment power-down sequence executed',                  time: '09:45 AM', status: 'Auto-resolved' },
+    { type: 'water',  text: 'Ground Drip System — Overnight smart irrigation cycle completed (450 L saved)',  time: '06:00 AM', status: 'Auto-resolved' },
+    { type: 'energy', text: 'Campus Night Dimming — Transitioned to active daylight operational profile',   time: '07:30 AM', status: 'Auto-resolved' },
   ],
 };

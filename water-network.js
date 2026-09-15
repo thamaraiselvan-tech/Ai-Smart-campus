@@ -1,6 +1,6 @@
 /* ============================================================
-   CampusNexus — Water Network Visualization (Canvas 2D)
-   Pipe schematic with animated flow particles & anomaly pulse
+   Saranathan College of Engineering — Water Network Canvas 2D
+   Light Schematic with Animated Flow Particles & Anomaly Pulse
    ============================================================ */
 
 const WaterNetwork = {
@@ -29,7 +29,7 @@ const WaterNetwork = {
     this._resize();
     window.addEventListener('resize', () => this._resize());
 
-    // Start animation
+    // Start animation loop
     this._animate();
   },
 
@@ -53,13 +53,13 @@ const WaterNetwork = {
     CampusData.waterNetwork.connections.forEach(([fromId, toId]) => {
       const from = this.nodeMap[fromId];
       const to   = this.nodeMap[toId];
-      // 5 particles per connection, evenly spaced
+      // 5 flow particles per pipe connection
       for (let i = 0; i < 5; i++) {
         this.particles.push({
           from, to,
           progress: i / 5,
-          speed: 0.0025 + Math.random() * 0.0015,
-          size: 2.5 + Math.random() * 1.5,
+          speed: 0.0028 + Math.random() * 0.0015,
+          size: 3.0 + Math.random() * 1.5,
         });
       }
     });
@@ -75,23 +75,46 @@ const WaterNetwork = {
     const time = (performance.now() - this._startTime) * 0.001;
     const ctx = this.ctx;
 
-    // Clear
+    // Clear background
     ctx.clearRect(0, 0, w, h);
 
-    // Update particles
+    // Subtle light grid background on canvas
+    this._drawCanvasGrid(ctx, w, h);
+
+    // Update particles position
     this.particles.forEach(p => {
       p.progress += p.speed;
       if (p.progress > 1) p.progress -= 1;
     });
 
-    // Draw connections
+    // Draw pipe connections
     this._drawConnections(ctx, w, h, time);
 
-    // Draw particles
+    // Draw moving water flow particles
     this._drawParticles(ctx, w, h, time);
 
-    // Draw nodes
+    // Draw campus water nodes
     this._drawNodes(ctx, w, h, time);
+  },
+
+  _drawCanvasGrid(ctx, w, h) {
+    ctx.save();
+    ctx.strokeStyle = '#F1F5F9';
+    ctx.lineWidth = 1;
+    const step = 40;
+    for (let x = 0; x < w; x += step) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+      ctx.stroke();
+    }
+    for (let y = 0; y < h; y += step) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+    ctx.restore();
   },
 
   _drawConnections(ctx, w, h, time) {
@@ -101,24 +124,25 @@ const WaterNetwork = {
       const x1 = from.rx * w, y1 = from.ry * h;
       const x2 = to.rx * w,   y2 = to.ry * h;
 
-      // Glow line
+      const hasAnomaly = (from.status === 'anomaly' || to.status === 'anomaly');
+
       ctx.save();
+
+      // Outer glow line
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
-
-      const hasAnomaly = (from.status === 'anomaly' || to.status === 'anomaly');
-      ctx.strokeStyle = hasAnomaly ? 'rgba(245, 158, 11, 0.18)' : 'rgba(45, 212, 191, 0.12)';
+      ctx.strokeStyle = hasAnomaly ? 'rgba(217, 119, 6, 0.18)' : 'rgba(37, 99, 235, 0.15)';
       ctx.lineWidth = 8;
       ctx.stroke();
 
-      // Core line
+      // Core pipe line
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
-      ctx.strokeStyle = hasAnomaly ? 'rgba(245, 158, 11, 0.4)' : 'rgba(45, 212, 191, 0.3)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([6, 4]);
+      ctx.strokeStyle = hasAnomaly ? '#D97706' : '#3B82F6';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([8, 5]);
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.restore();
@@ -133,20 +157,20 @@ const WaterNetwork = {
       const y = y1 + (y2 - y1) * p.progress;
 
       const hasAnomaly = (p.from.status === 'anomaly' || p.to.status === 'anomaly');
-      const color = hasAnomaly ? '#F59E0B' : '#2DD4BF';
+      const color = hasAnomaly ? '#D97706' : '#2563EB';
 
-      // Glow
       ctx.save();
+      // Outer glow
       ctx.beginPath();
       ctx.arc(x, y, p.size + 3, 0, Math.PI * 2);
-      ctx.fillStyle = hasAnomaly ? 'rgba(245, 158, 11, 0.15)' : 'rgba(45, 212, 191, 0.15)';
+      ctx.fillStyle = hasAnomaly ? 'rgba(217, 119, 6, 0.2)' : 'rgba(37, 99, 235, 0.2)';
       ctx.fill();
 
-      // Core
+      // Core dot
       ctx.beginPath();
       ctx.arc(x, y, p.size, 0, Math.PI * 2);
       ctx.fillStyle = color;
-      ctx.globalAlpha = 0.7 + Math.sin(time * 3 + p.progress * 6) * 0.3;
+      ctx.globalAlpha = 0.85 + Math.sin(time * 3 + p.progress * 6) * 0.15;
       ctx.fill();
       ctx.restore();
     });
@@ -157,54 +181,51 @@ const WaterNetwork = {
       const x = node.rx * w;
       const y = node.ry * h;
       const isAnomaly = node.status === 'anomaly';
-      const radius = isAnomaly ? 28 : 24;
+      const radius = isAnomaly ? 28 : 25;
 
       ctx.save();
 
       // Anomaly pulse ring
       if (isAnomaly) {
-        const pulseRadius = radius + 8 + Math.sin(time * 3) * 5;
-        const pulseAlpha  = 0.15 + Math.sin(time * 3) * 0.1;
+        const pulseRadius = radius + 8 + Math.sin(time * 3.5) * 6;
+        const pulseAlpha  = 0.25 + Math.sin(time * 3.5) * 0.15;
         ctx.beginPath();
         ctx.arc(x, y, pulseRadius, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(245, 158, 11, ${pulseAlpha})`;
+        ctx.strokeStyle = `rgba(217, 119, 6, ${pulseAlpha})`;
         ctx.lineWidth = 2;
         ctx.stroke();
       }
 
-      // Node circle — outer ring
+      // Node background disc
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
-      const fillColor = isAnomaly
-        ? 'rgba(245, 158, 11, 0.12)'
-        : 'rgba(45, 212, 191, 0.08)';
-      ctx.fillStyle = fillColor;
+      ctx.fillStyle = isAnomaly ? '#FFF7ED' : '#EFF6FF';
       ctx.fill();
-      ctx.strokeStyle = isAnomaly ? 'rgba(245, 158, 11, 0.6)' : 'rgba(45, 212, 191, 0.35)';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = isAnomaly ? '#D97706' : '#2563EB';
+      ctx.lineWidth = 2;
       ctx.stroke();
 
       // Flow rate number
-      ctx.fillStyle = isAnomaly ? '#F59E0B' : '#2DD4BF';
-      ctx.font = '700 13px Inter, sans-serif';
+      ctx.fillStyle = isAnomaly ? '#C2410C' : '#1E40AF';
+      ctx.font = '800 13.5px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(node.flow.toFixed(1), x, y - 2);
+      ctx.fillText(node.flow.toFixed(1), x, y - 3);
 
-      // Unit
-      ctx.fillStyle = isAnomaly ? 'rgba(245,158,11,0.6)' : 'rgba(45,212,191,0.5)';
-      ctx.font = '500 8px Inter, sans-serif';
+      // Unit text
+      ctx.fillStyle = isAnomaly ? '#D97706' : '#3B82F6';
+      ctx.font = '600 8.5px Inter, sans-serif';
       ctx.fillText('L/min', x, y + 11);
 
-      // Node name (below)
-      ctx.fillStyle = '#94A3B8';
-      ctx.font = '600 10px Inter, sans-serif';
+      // Node title label (below node)
+      ctx.fillStyle = '#0F172A';
+      ctx.font = '700 11px Inter, sans-serif';
       ctx.fillText(node.name, x, y + radius + 16);
 
-      // Expected range for anomaly
+      // Expected baseline text for anomalies
       if (isAnomaly && node.expected) {
-        ctx.fillStyle = 'rgba(245, 158, 11, 0.7)';
-        ctx.font = '500 9px Inter, sans-serif';
+        ctx.fillStyle = '#D97706';
+        ctx.font = '600 9.5px Inter, sans-serif';
         ctx.fillText('Expected: ' + node.expected + ' L/min', x, y + radius + 30);
       }
 

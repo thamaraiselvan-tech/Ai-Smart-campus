@@ -1,6 +1,6 @@
 /* ============================================================
-   CampusNexus — App Controller
-   Navigation, screen management, data population
+   Saranathan College of Engineering — App Controller
+   Navigation, Screen Management, Data Population & Inspection
    ============================================================ */
 
 const App = {
@@ -16,7 +16,7 @@ const App = {
     this._updateClock();
     setInterval(() => this._updateClock(), 30000);
 
-    // Initialize overview screen (visible on load)
+    // Initialize 3D canvas and sparkline charts on startup
     Campus3D.init('campus-3d');
     Charts.initSparklines();
   },
@@ -30,7 +30,7 @@ const App = {
       });
     });
 
-    // Back button on building screen
+    // Back button on building drill-down screen
     const backBtn = document.getElementById('back-btn');
     if (backBtn) {
       backBtn.addEventListener('click', () => this.showScreen('overview'));
@@ -38,27 +38,27 @@ const App = {
   },
 
   showScreen(name) {
-    // Update screens
+    // Hide all screens & show target
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById('screen-' + name);
     if (target) target.classList.add('active');
 
-    // Update nav
+    // Update active navigation icon
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const navItem = document.querySelector('[data-screen="' + name + '"]');
     if (navItem) navItem.classList.add('active');
 
-    // Update topbar title
+    // Update screen headers
     const titles = {
-      overview: 'Overview Dashboard',
-      building: 'Building Details',
-      water:    'Water & Leak Detection',
-      alerts:   'Alerts & Action Log',
+      overview: 'Campus Overview',
+      building: 'Block Details & Analytics',
+      water:    'Water & Leak Network',
+      alerts:   'Autonomous Action & Audit Log',
     };
     const titleEl = document.getElementById('screen-title');
     if (titleEl) titleEl.textContent = titles[name] || name;
 
-    // Deferred initialization for screens with canvases
+    // Deferred initialization for screens with heavy canvases
     requestAnimationFrame(() => {
       if (name === 'water' && !this._waterInitialized) {
         WaterNetwork.init('water-network');
@@ -76,15 +76,16 @@ const App = {
     this.currentScreen = name;
   },
 
-  /* ── Building drill-down ──────────────────────────────── */
+  /* ── Building Inspection Drill-down ────────────────────── */
   showBuilding(building) {
-    // Populate header stats
     const nameEl = document.getElementById('building-name');
+    const subEl  = document.getElementById('building-subtitle');
     const occEl  = document.getElementById('building-occupancy');
     const powEl  = document.getElementById('building-power');
     const watEl  = document.getElementById('building-water');
 
     if (nameEl) nameEl.textContent = building.name;
+    if (subEl)  subEl.textContent  = building.subtitle || 'Saranathan Campus Building';
     if (occEl)  occEl.textContent  = building.occupancy + '%';
     if (powEl)  powEl.textContent  = building.power + ' kW';
     if (watEl)  watEl.textContent  = building.water + ' L/min';
@@ -92,10 +93,10 @@ const App = {
     // Populate room cards
     this._populateRooms();
 
-    // Switch screen
+    // Switch to building view
     this.showScreen('building');
 
-    // Re-init power chart if already created (canvas size may have changed)
+    // Re-render power chart if canvas resized
     if (this._powerChartInitialized) {
       requestAnimationFrame(() => Charts.initPowerChart());
     }
@@ -109,7 +110,7 @@ const App = {
     CampusData.rooms.forEach((room, i) => {
       const card = document.createElement('div');
       card.className = 'room-card';
-      card.style.animationDelay = (i * 0.06) + 's';
+      card.style.animationDelay = (i * 0.05) + 's';
       card.style.animation = 'fadeInUp 0.4s ease both';
 
       const occupiedClass = room.occupied ? 'occupied' : 'empty';
@@ -122,8 +123,8 @@ const App = {
           <span class="occupancy-dot ${occupiedClass}" title="${room.occupied ? 'Occupied' : 'Empty'}"></span>
         </div>
         <div class="room-statuses">
-          <span class="room-status-pill ${lightsClass}">💡 Lights ${room.lights}</span>
-          <span class="room-status-pill ${acClass}">❄️ AC ${room.ac}</span>
+          <span class="room-status-pill ${lightsClass}">💡 Lights ${room.lights.toUpperCase()}</span>
+          <span class="room-status-pill ${acClass}">❄️ HVAC ${room.ac.toUpperCase()}</span>
         </div>
         <div class="room-action">${room.lastAction}</div>
       `;
@@ -132,13 +133,12 @@ const App = {
     });
   },
 
-  /* ── Ticker strip ─────────────────────────────────────── */
+  /* ── Live Ticker Strip ─────────────────────────────────── */
   _populateTicker() {
     const track = document.getElementById('ticker-track');
     if (!track) return;
     track.innerHTML = '';
 
-    // Build items HTML
     const itemsHTML = CampusData.ticker.map(t =>
       `<span class="ticker-item">
         <span class="ticker-icon">${t.icon}</span>
@@ -148,11 +148,11 @@ const App = {
       <span class="ticker-separator">●</span>`
     ).join('');
 
-    // Duplicate for seamless loop
+    // Duplicate for seamless infinite scrolling loop
     track.innerHTML = itemsHTML + itemsHTML;
   },
 
-  /* ── Alerts list ──────────────────────────────────────── */
+  /* ── Alerts & Action Log List ──────────────────────────── */
   _populateAlerts() {
     const list = document.getElementById('alerts-list');
     if (!list) return;
@@ -161,7 +161,7 @@ const App = {
     CampusData.alerts.forEach((alert, i) => {
       const item = document.createElement('div');
       item.className = 'alert-item';
-      item.style.animationDelay = (i * 0.06) + 's';
+      item.style.animationDelay = (i * 0.05) + 's';
 
       const iconClass = alert.type === 'energy' ? 'energy' : 'water';
       const icon = alert.type === 'energy' ? '⚡' : '💧';
@@ -178,7 +178,7 @@ const App = {
     });
   },
 
-  /* ── Clock ────────────────────────────────────────────── */
+  /* ── Real-time Header Clock ───────────────────────────── */
   _updateClock() {
     const el = document.getElementById('topbar-time');
     if (!el) return;
@@ -191,7 +191,7 @@ const App = {
   },
 };
 
-/* ── Boot ────────────────────────────────────────────────── */
+/* ── Bootstrap on DOM Ready ──────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   App.init();
 });

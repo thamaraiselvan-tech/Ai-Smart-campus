@@ -1,5 +1,6 @@
 /* ============================================================
-   CampusNexus — Chart.js Sparklines & Power Chart
+   Saranathan College of Engineering — Chart.js Visualizations
+   Light Theme Configured for Executive Dashboard
    ============================================================ */
 
 const Charts = {
@@ -7,20 +8,20 @@ const Charts = {
   sparklineWater: null,
   powerChart: null,
 
-  /* ── KPI Sparklines (overview screen) ─────────────────── */
+  /* ── KPI Sparklines (Overview Screen) ─────────────────── */
   initSparklines() {
     this._createSparkline(
       'energy-sparkline',
       CampusData.kpi.energySaved.trend,
-      '#2DD4BF',
-      'rgba(45, 212, 191, 0.12)',
+      '#059669',
+      'rgba(5, 150, 105, 0.12)',
       'sparklineEnergy'
     );
     this._createSparkline(
       'water-sparkline',
       CampusData.kpi.waterPrevented.trend,
-      '#38BDF8',
-      'rgba(56, 189, 248, 0.12)',
+      '#2563EB',
+      'rgba(37, 99, 235, 0.12)',
       'sparklineWater'
     );
   },
@@ -42,7 +43,7 @@ const Charts = {
         datasets: [{
           data: data,
           borderColor: borderColor,
-          borderWidth: 2,
+          borderWidth: 2.5,
           fill: true,
           backgroundColor: bgColor,
           tension: 0.45,
@@ -73,7 +74,7 @@ const Charts = {
     });
   },
 
-  /* ── 24h Power Draw Chart (building drill-down) ───────── */
+  /* ── 24h Power Load Curve (Building Drill-down) ────────── */
   initPowerChart() {
     const canvas = document.getElementById('power-chart');
     if (!canvas) return;
@@ -86,7 +87,7 @@ const Charts = {
     const chartData = CampusData.powerChart24h;
     const shutoffIdx = chartData.shutoffIndex;
 
-    // Custom annotation plugin
+    // Custom annotation plugin for auto-shutoff event
     const shutoffAnnotation = {
       id: 'shutoffAnnotation',
       afterDatasetsDraw(chart) {
@@ -100,29 +101,30 @@ const Charts = {
 
         drawCtx.save();
 
-        // Vertical connector line
+        // Vertical dotted connector line
         drawCtx.beginPath();
         drawCtx.moveTo(x, y - 6);
         drawCtx.lineTo(x, y - 32);
-        drawCtx.strokeStyle = 'rgba(245, 158, 11, 0.6)';
-        drawCtx.lineWidth = 1;
+        drawCtx.strokeStyle = 'rgba(217, 119, 6, 0.7)';
+        drawCtx.lineWidth = 1.5;
         drawCtx.setLineDash([3, 3]);
         drawCtx.stroke();
         drawCtx.setLineDash([]);
 
-        // Label background
-        const label = 'Auto shutoff triggered';
-        drawCtx.font = '600 10px Inter, sans-serif';
+        // Label box
+        const label = 'AI Auto-shutoff dip';
+        drawCtx.font = '700 10.5px Inter, sans-serif';
         const textW = drawCtx.measureText(label).width;
-        const padX = 8, padY = 4;
+        const padX = 10, padY = 5;
         const boxX = x - textW / 2 - padX;
-        const boxY = y - 50;
+        const boxY = y - 52;
 
-        drawCtx.fillStyle = 'rgba(245, 158, 11, 0.15)';
-        drawCtx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+        drawCtx.fillStyle = '#FFF7ED';
+        drawCtx.strokeStyle = '#FDBA74';
         drawCtx.lineWidth = 1;
+        
         // Manual rounded rect for browser compatibility
-        const bw = textW + padX * 2, bh = 18 + padY, br = 4;
+        const bw = textW + padX * 2, bh = 18 + padY, br = 6;
         drawCtx.beginPath();
         drawCtx.moveTo(boxX + br, boxY);
         drawCtx.lineTo(boxX + bw - br, boxY);
@@ -138,17 +140,17 @@ const Charts = {
         drawCtx.stroke();
 
         // Label text
-        drawCtx.fillStyle = '#F59E0B';
+        drawCtx.fillStyle = '#C2410C';
         drawCtx.textAlign = 'center';
         drawCtx.textBaseline = 'middle';
-        drawCtx.fillText(label, x, boxY + 9 + padY / 2);
+        drawCtx.fillText(label, x, boxY + 10 + padY / 2);
 
-        // Point dot
+        // Point dot pulse
         drawCtx.beginPath();
         drawCtx.arc(x, y, 5, 0, Math.PI * 2);
-        drawCtx.fillStyle = '#F59E0B';
+        drawCtx.fillStyle = '#D97706';
         drawCtx.fill();
-        drawCtx.strokeStyle = 'rgba(245, 158, 11, 0.3)';
+        drawCtx.strokeStyle = 'rgba(217, 119, 6, 0.3)';
         drawCtx.lineWidth = 6;
         drawCtx.stroke();
 
@@ -163,23 +165,23 @@ const Charts = {
         datasets: [{
           label: 'Power Draw (kW)',
           data: chartData.data,
-          borderColor: '#2DD4BF',
-          borderWidth: 2,
+          borderColor: '#059669',
+          borderWidth: 2.5,
           fill: true,
           backgroundColor: (context) => {
             const chart = context.chart;
             const { ctx: c, chartArea } = chart;
-            if (!chartArea) return 'rgba(45,212,191,0.1)';
+            if (!chartArea) return 'rgba(5, 150, 105, 0.1)';
             const gradient = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-            gradient.addColorStop(0, 'rgba(45, 212, 191, 0.18)');
-            gradient.addColorStop(1, 'rgba(45, 212, 191, 0)');
+            gradient.addColorStop(0, 'rgba(5, 150, 105, 0.22)');
+            gradient.addColorStop(1, 'rgba(5, 150, 105, 0)');
             return gradient;
           },
-          tension: 0.35,
+          tension: 0.38,
           pointRadius: 0,
-          pointHoverRadius: 4,
-          pointHoverBackgroundColor: '#2DD4BF',
-          pointHoverBorderColor: '#fff',
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: '#059669',
+          pointHoverBorderColor: '#FFFFFF',
           pointHoverBorderWidth: 2,
         }],
       },
@@ -189,39 +191,39 @@ const Charts = {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: 'rgba(30,41,59,0.95)',
-            titleColor: '#F1F5F9',
-            bodyColor: '#94A3B8',
-            borderColor: 'rgba(255,255,255,0.1)',
+            backgroundColor: '#0F172A',
+            titleColor: '#FFFFFF',
+            bodyColor: '#CBD5E1',
+            borderColor: '#334155',
             borderWidth: 1,
-            cornerRadius: 8,
-            padding: 10,
-            titleFont: { family: 'Inter', weight: '600', size: 12 },
+            cornerRadius: 10,
+            padding: 12,
+            titleFont: { family: 'Inter', weight: '700', size: 12 },
             bodyFont: { family: 'Inter', size: 11 },
             displayColors: false,
             callbacks: {
               title: (items) => items[0].label,
-              label: (item) => item.parsed.y + ' kW',
+              label: (item) => item.parsed.y + ' kW Power Draw',
             },
           },
         },
         scales: {
           x: {
             ticks: {
-              color: '#64748B',
-              font: { family: 'Inter', size: 9.5 },
+              color: '#475569',
+              font: { family: 'Inter', size: 10, weight: '600' },
               maxTicksLimit: 12,
             },
-            grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+            grid: { color: '#E2E8F0', drawBorder: false },
           },
           y: {
             beginAtZero: true,
             ticks: {
-              color: '#64748B',
-              font: { family: 'Inter', size: 10 },
+              color: '#475569',
+              font: { family: 'Inter', size: 10.5, weight: '600' },
               callback: (v) => v + ' kW',
             },
-            grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+            grid: { color: '#E2E8F0', drawBorder: false },
           },
         },
         interaction: {
