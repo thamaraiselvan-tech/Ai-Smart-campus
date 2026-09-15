@@ -94,6 +94,11 @@ const App = {
     this._updateFilterTabCounts();
     this._populateRooms();
 
+    // Trigger 3D Layer Expansion view on canvas
+    if (typeof Campus3D !== 'undefined' && Campus3D.expandBuilding) {
+      Campus3D.expandBuilding(building);
+    }
+
     // Switch screen to building view
     this.showScreen('building');
 

@@ -437,12 +437,16 @@ const Campus3D = {
     this.scene.add(this.particles);
   },
 
+  /* ── 3D Exploded Layer Expansion Engine State ──────────── */
+  expandedBuildingId: null,
+  currentExpandedBuilding: null,
+
   /* ── Realistic Architectural Building Assemblies ──────── */
   _createBuildings() {
     CampusData.buildings.forEach(b => {
       const group = new THREE.Group();
 
-      /* 1. Ground Field + Spectator Grandstand / Bleachers */
+      /* 1. Ground Field + Spectator Bleachers + Rainwater Cistern */
       if (b.id === 'ground') {
         this._createGroundBlock(group, b);
         group.position.set(b.x, 0, b.z);
@@ -450,7 +454,7 @@ const Campus3D = {
         return;
       }
 
-      /* 2. Basketball Court Block (Dual Courts + Hoops) */
+      /* 2. Basketball Court Block + Sub-surface Cistern */
       if (b.id === 'basketballCourt') {
         this._createBasketballCourtBlock(group, b);
         group.position.set(b.x, 0, b.z);
@@ -458,97 +462,118 @@ const Campus3D = {
         return;
       }
 
-      /* 3. Academic Towers & Utility Assemblies */
+      /* 3. Academic Towers & Utility Assemblies (Layered 3D Exploded View) */
       let bodyColor, emissive, emissiveIntensity, accentColor;
       switch (b.status) {
         case 'normal':
-          bodyColor = 0x1E293B;
-          emissive = 0x2563EB;
-          emissiveIntensity = 0.08;
-          accentColor = 0x3B82F6;
+          bodyColor = 0x1E293B; emissive = 0x2563EB; emissiveIntensity = 0.08; accentColor = 0x3B82F6;
           break;
         case 'alert':
-          bodyColor = 0x451A03;
-          emissive = 0xD97706;
-          emissiveIntensity = 0.25;
-          accentColor = 0xF59E0B;
+          bodyColor = 0x451A03; emissive = 0xD97706; emissiveIntensity = 0.25; accentColor = 0xF59E0B;
           break;
         case 'powered_down':
-          bodyColor = 0x334155;
-          emissive = 0x64748B;
-          emissiveIntensity = 0.02;
-          accentColor = 0x94A3B8;
+          bodyColor = 0x334155; emissive = 0x64748B; emissiveIntensity = 0.02; accentColor = 0x94A3B8;
           break;
       }
 
-      // Main Building Body Mesh
-      const geo = new THREE.BoxGeometry(b.width, b.height, b.depth);
-      const mat = new THREE.MeshStandardMaterial({
-        color: bodyColor,
-        emissive: emissive,
-        emissiveIntensity: emissiveIntensity,
-        roughness: 0.3,
-        metalness: 0.2,
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.y = b.height / 2;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.userData = { buildingId: b.id, buildingData: b };
-      group.add(mesh);
+      // --- LAYER 0: Sub-surface Rainwater Cistern Reservoir ---
+      const layerCistern = new THREE.Group();
+      const tankGeo = new THREE.BoxGeometry(b.width * 0.85, 0.5, b.depth * 0.85);
+      const tankMat = new THREE.MeshStandardMaterial({ color: 0x0284C7, transparent: true, opacity: 0.82, roughness: 0.2, metalness: 0.4 });
+      const tankMesh = new THREE.Mesh(tankGeo, tankMat);
+      tankMesh.position.y = -0.25;
+      layerCistern.add(tankMesh);
 
-      // Glass Edge Line Wireframes
-      const edges = new THREE.EdgesGeometry(geo);
-      const lineMat = new THREE.LineBasicMaterial({ color: accentColor, transparent: true, opacity: 0.45 });
-      const wireframe = new THREE.LineSegments(edges, lineMat);
-      wireframe.position.y = b.height / 2;
-      group.add(wireframe);
+      // Water Level Fluid Plane inside cistern
+      const fluidGeo = new THREE.BoxGeometry(b.width * 0.82, 0.35, b.depth * 0.82);
+      const fluidMat = new THREE.MeshBasicMaterial({ color: 0x38BDF8, transparent: true, opacity: 0.9 });
+      const fluidMesh = new THREE.Mesh(fluidGeo, fluidMat);
+      fluidMesh.position.y = -0.3;
+      layerCistern.add(fluidMesh);
 
-      // KS Block Glass Entrance Atrium & Podium Steps
+      // Cistern Piping Manifold
+      const pipeGeo = new THREE.CylinderGeometry(0.04, 0.04, b.width * 0.7);
+      const pipeMat = new THREE.MeshStandardMaterial({ color: 0x94A3B8, metalness: 0.8 });
+      const pipe = new THREE.Mesh(pipeGeo, pipeMat);
+      pipe.rotation.z = Math.PI / 2;
+      pipe.position.set(0, -0.05, 0);
+      layerCistern.add(pipe);
+      group.add(layerCistern);
+
+      // --- LAYER 1: Ground Floor Podium & Interior Workstations ---
+      const layerPodium = new THREE.Group();
+      const podiumSlabGeo = new THREE.BoxGeometry(b.width, 0.1, b.depth);
+      const podiumSlabMat = new THREE.MeshStandardMaterial({ color: 0xCBD5E1, roughness: 0.5 });
+      const podiumSlab = new THREE.Mesh(podiumSlabGeo, podiumSlabMat);
+      podiumSlab.position.y = 0.05;
+      layerPodium.add(podiumSlab);
+
+      // Glowing AI Server / Workstation Nodes inside
+      for (let nx = -b.width * 0.3; nx <= b.width * 0.3; nx += 0.6) {
+        for (let nz = -b.depth * 0.25; nz <= b.depth * 0.25; nz += 0.6) {
+          const nodeGeo = new THREE.BoxGeometry(0.12, 0.15, 0.12);
+          const nodeMat = new THREE.MeshStandardMaterial({ color: 0x3B82F6, emissive: 0x3B82F6, emissiveIntensity: 0.7 });
+          const node = new THREE.Mesh(nodeGeo, nodeMat);
+          node.position.set(nx, 0.18, nz);
+          layerPodium.add(node);
+        }
+      }
+
+      // Entrance Atrium for KS / RV Block
       if (b.id === 'ksBlock') {
-        // Steps
         const stepGeo = new THREE.BoxGeometry(b.width * 0.6, 0.1, 0.6);
         const stepMat = new THREE.MeshStandardMaterial({ color: 0xCBD5E1, roughness: 0.5 });
         const step = new THREE.Mesh(stepGeo, stepMat);
         step.position.set(0, 0.05, b.depth / 2 + 0.3);
-        group.add(step);
+        layerPodium.add(step);
 
-        // Glass Atrium Lobby
-        const atriumGeo = new THREE.BoxGeometry(b.width * 0.5, 0.8, 0.4);
+        const atriumGeo = new THREE.BoxGeometry(b.width * 0.5, 0.6, 0.4);
         const atriumMat = new THREE.MeshStandardMaterial({ color: 0x93C5FD, transparent: true, opacity: 0.75, metalness: 0.5 });
         const atrium = new THREE.Mesh(atriumGeo, atriumMat);
-        atrium.position.set(0, 0.4, b.depth / 2 + 0.2);
-        atrium.castShadow = true;
-        group.add(atrium);
+        atrium.position.set(0, 0.3, b.depth / 2 + 0.2);
+        layerPodium.add(atrium);
       }
+      group.add(layerPodium);
 
-      // Entrance Canopy for RV Block
-      if (b.id === 'rvBlock') {
-        const canopyGeo = new THREE.BoxGeometry(b.width * 0.4, 0.08, 0.4);
-        const canopyMat = new THREE.MeshStandardMaterial({ color: 0x3B82F6, metalness: 0.5 });
-        const canopy = new THREE.Mesh(canopyGeo, canopyMat);
-        canopy.position.set(0, 0.4, b.depth / 2 + 0.2);
-        group.add(canopy);
-      }
+      // --- LAYER 2: Middle Academic Floor & Main Body ---
+      const layerMiddle = new THREE.Group();
+      const mainGeo = new THREE.BoxGeometry(b.width, b.height * 0.6, b.depth);
+      const mainMat = new THREE.MeshStandardMaterial({
+        color: bodyColor, emissive: emissive, emissiveIntensity: emissiveIntensity, roughness: 0.3, metalness: 0.2,
+      });
+      const mainMesh = new THREE.Mesh(mainGeo, mainMat);
+      mainMesh.position.y = b.height * 0.3 + 0.1;
+      mainMesh.castShadow = true; mainMesh.receiveShadow = true;
+      mainMesh.userData = { buildingId: b.id, buildingData: b };
+      layerMiddle.add(mainMesh);
+
+      // Glass Edge Wireframe
+      const edges = new THREE.EdgesGeometry(mainGeo);
+      const lineMat = new THREE.LineBasicMaterial({ color: accentColor, transparent: true, opacity: 0.45 });
+      const wireframe = new THREE.LineSegments(edges, lineMat);
+      wireframe.position.y = b.height * 0.3 + 0.1;
+      layerMiddle.add(wireframe);
 
       // Windows Facade Bands
-      const windowCount = Math.max(1, Math.floor(b.height / 0.55));
+      const windowCount = Math.max(1, Math.floor(b.height / 0.6));
       for (let i = 0; i < windowCount; i++) {
-        const wy = (i + 1) * (b.height / (windowCount + 1));
+        const wy = (i + 1) * ((b.height * 0.6) / (windowCount + 1));
         const windowGeo = new THREE.PlaneGeometry(b.width * 0.84, 0.08);
         const windowMat = new THREE.MeshBasicMaterial({ color: 0x93C5FD, transparent: true, opacity: 0.65 });
         const windowMesh = new THREE.Mesh(windowGeo, windowMat);
         windowMesh.position.set(0, wy, b.depth / 2 + 0.01);
-        group.add(windowMesh);
+        layerMiddle.add(windowMesh);
       }
+      group.add(layerMiddle);
 
-      // Roof Structures (Parapets & Solar arrays & Chillers)
+      // --- LAYER 3: Roof Deck, Solar Array & HVAC Assemblies ---
+      const layerRoof = new THREE.Group();
       const roofGeo = new THREE.BoxGeometry(b.width * 0.9, 0.08, b.depth * 0.9);
       const roofMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.4 });
       const roof = new THREE.Mesh(roofGeo, roofMat);
       roof.position.y = b.height + 0.04;
       roof.castShadow = true;
-      group.add(roof);
+      layerRoof.add(roof);
 
       if (b.solarGeneration > 0) {
         const solarGeo = new THREE.PlaneGeometry(b.width * 0.6, b.depth * 0.5);
@@ -556,20 +581,18 @@ const Campus3D = {
         const solar = new THREE.Mesh(solarGeo, solarMat);
         solar.rotation.x = -Math.PI / 2;
         solar.position.y = b.height + 0.09;
-        group.add(solar);
+        layerRoof.add(solar);
       }
 
-      // Roof HVAC Chillers for KS / RV / JS
       if (b.id === 'ksBlock' || b.id === 'rvBlock' || b.id === 'jsBlock') {
         const chillerGeo = new THREE.BoxGeometry(0.3, 0.2, 0.3);
         const chillerMat = new THREE.MeshStandardMaterial({ color: 0x94A3B8, metalness: 0.8 });
         const chiller = new THREE.Mesh(chillerGeo, chillerMat);
         chiller.position.set(-b.width * 0.25, b.height + 0.18, 0);
         chiller.castShadow = true;
-        group.add(chiller);
+        layerRoof.add(chiller);
       }
 
-      // Mech Block Pitched Metal Roof Assembly
       if (b.id === 'mechBlock') {
         const pitchedGeo = new THREE.ConeGeometry(b.width * 0.6, 0.4, 4);
         const pitchedMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8, roughness: 0.3 });
@@ -577,202 +600,155 @@ const Campus3D = {
         pitchedRoof.rotation.y = Math.PI / 4;
         pitchedRoof.position.set(0, b.height + 0.2, 0);
         pitchedRoof.castShadow = true;
-        group.add(pitchedRoof);
+        layerRoof.add(pitchedRoof);
       }
 
-      // Cafeteria Outdoor Patio Tables & Umbrella Meshes
       if (b.id === 'cafeteria') {
         const patioGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.12);
         const patioMat = new THREE.MeshStandardMaterial({ color: 0x0284C7 });
         const umbrellaGeo = new THREE.ConeGeometry(0.25, 0.15, 6);
         const umbrellaMat = new THREE.MeshStandardMaterial({ color: 0xE0F2FE });
-
-        const patioOffsets = [
-          { x: -b.width / 2 - 0.3, z: 0 },
-          { x:  b.width / 2 + 0.3, z: 0 },
-        ];
-        patioOffsets.forEach(p => {
-          const t = new THREE.Mesh(patioGeo, patioMat);
-          t.position.set(p.x, 0.06, p.z);
-          group.add(t);
-
-          const u = new THREE.Mesh(umbrellaGeo, umbrellaMat);
-          u.position.set(p.x, 0.35, p.z);
-          group.add(u);
+        [{ x: -b.width / 2 - 0.3, z: 0 }, { x: b.width / 2 + 0.3, z: 0 }].forEach(p => {
+          const t = new THREE.Mesh(patioGeo, patioMat); t.position.set(p.x, 0.06, p.z); layerRoof.add(t);
+          const u = new THREE.Mesh(umbrellaGeo, umbrellaMat); u.position.set(p.x, 0.35, p.z); layerRoof.add(u);
         });
       }
 
-      // Generator Room Hazard Texture Striping & Transformer Coils
       if (b.id === 'generatorRoom') {
         const coilGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.4);
         const coilMat = new THREE.MeshStandardMaterial({ color: 0xB45309, metalness: 0.9, roughness: 0.2 });
-        const coil1 = new THREE.Mesh(coilGeo, coilMat);
-        coil1.position.set(-0.4, 0.2, b.depth / 2 + 0.2);
-        group.add(coil1);
-
-        const coil2 = new THREE.Mesh(coilGeo, coilMat);
-        coil2.position.set(0.4, 0.2, b.depth / 2 + 0.2);
-        group.add(coil2);
+        const coil1 = new THREE.Mesh(coilGeo, coilMat); coil1.position.set(-0.4, 0.2, b.depth / 2 + 0.2); layerRoof.add(coil1);
+        const coil2 = new THREE.Mesh(coilGeo, coilMat); coil2.position.set(0.4, 0.2, b.depth / 2 + 0.2); layerRoof.add(coil2);
       }
+      group.add(layerRoof);
+
+      // Translucent Exploded Blueprint Guide Lines
+      const guideBoxGeo = new THREE.BoxGeometry(b.width * 1.02, b.height + 4.2, b.depth * 1.02);
+      const guideEdges  = new THREE.EdgesGeometry(guideBoxGeo);
+      const guideMat    = new THREE.LineDashedMaterial({ color: 0x3B82F6, dashSize: 0.1, gapSize: 0.05, transparent: true, opacity: 0 });
+      const guideLines  = new THREE.LineSegments(guideEdges, guideMat);
+      guideLines.computeLineDistances();
+      guideLines.position.y = (b.height + 4.2) / 2 - 1.2;
+      guideLines.visible = false;
+      group.add(guideLines);
 
       group.position.set(b.x, 0, b.z);
       this.scene.add(group);
 
       this.buildings.push({
-        group, mesh, mat, lineMat,
+        group, mesh: mainMesh, mat: mainMat, lineMat,
         data: b,
         baseY: 0, targetY: 0, currentY: 0,
+        expansionFactor: 0,
+        guideLines: guideLines,
+        layers: [
+          { group: layerCistern, baseY: 0, expandY: -1.5 },
+          { group: layerPodium,  baseY: 0, expandY: 0.2 },
+          { group: layerMiddle,  baseY: 0, expandY: 1.3 },
+          { group: layerRoof,    baseY: 0, expandY: 2.6 },
+        ],
         baseEmissive: emissiveIntensity,
       });
     });
   },
 
-  /* ── Ground Field Block + Stadium Grandstand Bleachers ─── */
+  /* ── Ground Field Block + Sub-surface Cistern Expansion ─── */
   _createGroundBlock(group, b) {
-    const turfGeo = new THREE.BoxGeometry(b.width, b.height, b.depth);
-    const turfMat = new THREE.MeshStandardMaterial({ color: 0x16A34A, roughness: 0.85, metalness: 0.05 });
-    const turfMesh = new THREE.Mesh(turfGeo, turfMat);
-    turfMesh.position.y = b.height / 2;
-    turfMesh.receiveShadow = true;
-    turfMesh.castShadow = true;
-    turfMesh.userData = { buildingId: b.id, buildingData: b };
-    group.add(turfMesh);
+    const layerCistern = new THREE.Group();
+    const tankGeo = new THREE.BoxGeometry(b.width * 0.85, 0.5, b.depth * 0.85);
+    const tankMat = new THREE.MeshStandardMaterial({ color: 0x0284C7, transparent: true, opacity: 0.85 });
+    const tank = new THREE.Mesh(tankGeo, tankMat); tank.position.y = -0.25; layerCistern.add(tank);
+    group.add(layerCistern);
 
-    // Running Track Loop
+    const layerSurface = new THREE.Group();
+    const turfGeo = new THREE.BoxGeometry(b.width, b.height, b.depth);
+    const turfMat = new THREE.MeshStandardMaterial({ color: 0x16A34A, roughness: 0.85 });
+    const turfMesh = new THREE.Mesh(turfGeo, turfMat);
+    turfMesh.position.y = b.height / 2; turfMesh.receiveShadow = true; turfMesh.castShadow = true;
+    turfMesh.userData = { buildingId: b.id, buildingData: b };
+    layerSurface.add(turfMesh);
+
     const trackGeo = new THREE.PlaneGeometry(b.width + 0.6, b.depth + 0.6);
     const trackMat = new THREE.MeshStandardMaterial({ color: 0xC2410C, roughness: 0.8 });
     const trackMesh = new THREE.Mesh(trackGeo, trackMat);
-    trackMesh.rotation.x = -Math.PI / 2;
-    trackMesh.position.y = 0.008;
-    trackMesh.receiveShadow = true;
-    group.add(trackMesh);
+    trackMesh.rotation.x = -Math.PI / 2; trackMesh.position.y = 0.008;
+    layerSurface.add(trackMesh);
 
-    // Field Markings
     const lineGeo = new THREE.PlaneGeometry(b.width * 0.85, b.depth * 0.85);
     const lineMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, wireframe: true, opacity: 0.7, transparent: true });
-    const lines = new THREE.Mesh(lineGeo, lineMat);
-    lines.rotation.x = -Math.PI / 2;
-    lines.position.y = b.height + 0.002;
-    group.add(lines);
+    const lines = new THREE.Mesh(lineGeo, lineMat); lines.rotation.x = -Math.PI / 2; lines.position.y = b.height + 0.002;
+    layerSurface.add(lines);
+    group.add(layerSurface);
 
-    // 3D Spectator Grandstand / Bleachers along rear edge
+    const layerSuper = new THREE.Group();
     const bleacherTier1 = new THREE.BoxGeometry(b.width * 0.9, 0.15, 0.3);
-    const bleacherTier2 = new THREE.BoxGeometry(b.width * 0.9, 0.30, 0.25);
-    const bleacherMat   = new THREE.MeshStandardMaterial({ color: 0x94A3B8, roughness: 0.5 });
-    
-    const t1 = new THREE.Mesh(bleacherTier1, bleacherMat);
-    t1.position.set(0, 0.075, -b.depth / 2 - 0.25);
-    t1.castShadow = true;
-    group.add(t1);
+    const bleacherMat   = new THREE.MeshStandardMaterial({ color: 0x94A3B8 });
+    const t1 = new THREE.Mesh(bleacherTier1, bleacherMat); t1.position.set(0, 0.075, -b.depth / 2 - 0.25); layerSuper.add(t1);
 
-    const t2 = new THREE.Mesh(bleacherTier2, bleacherMat);
-    t2.position.set(0, 0.15, -b.depth / 2 - 0.45);
-    t2.castShadow = true;
-    group.add(t2);
-
-    // 4 Corner Stadium Light Towers
     const towerGeo = new THREE.CylinderGeometry(0.03, 0.04, 2.0);
     const towerMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8 });
     const headGeo  = new THREE.BoxGeometry(0.35, 0.15, 0.08);
     const headMat  = new THREE.MeshBasicMaterial({ color: 0xFEF08A });
-
-    const cornerOffsets = [
-      { x: -b.width / 2 - 0.2, z: -b.depth / 2 - 0.2 },
-      { x:  b.width / 2 + 0.2, z: -b.depth / 2 - 0.2 },
-      { x: -b.width / 2 - 0.2, z:  b.depth / 2 + 0.2 },
-      { x:  b.width / 2 + 0.2, z:  b.depth / 2 + 0.2 },
-    ];
-
-    cornerOffsets.forEach(c => {
-      const tower = new THREE.Mesh(towerGeo, towerMat);
-      tower.position.set(c.x, 1.0, c.z);
-      group.add(tower);
-
-      const head = new THREE.Mesh(headGeo, headMat);
-      head.position.set(c.x, 2.0, c.z);
-      group.add(head);
+    [{ x: -b.width / 2 - 0.2, z: -b.depth / 2 - 0.2 }, { x: b.width / 2 + 0.2, z: -b.depth / 2 - 0.2 }].forEach(c => {
+      const tower = new THREE.Mesh(towerGeo, towerMat); tower.position.set(c.x, 1.0, c.z); layerSuper.add(tower);
+      const head = new THREE.Mesh(headGeo, headMat); head.position.set(c.x, 2.0, c.z); layerSuper.add(head);
     });
+    group.add(layerSuper);
 
     this.buildings.push({
       group, mesh: turfMesh, mat: turfMat, lineMat: null,
-      data: b,
-      baseY: 0, targetY: 0, currentY: 0,
+      data: b, baseY: 0, targetY: 0, currentY: 0, expansionFactor: 0,
+      layers: [
+        { group: layerCistern, baseY: 0, expandY: -1.4 },
+        { group: layerSurface, baseY: 0, expandY: 0.4 },
+        { group: layerSuper,   baseY: 0, expandY: 1.8 },
+      ],
       baseEmissive: 0,
     });
   },
 
-  /* ── Basketball Court Block (3D Hoops & Glass Backboards) ── */
+  /* ── Basketball Court Block + Sub-surface Cistern Expansion ─ */
   _createBasketballCourtBlock(group, b) {
+    const layerCistern = new THREE.Group();
+    const tankGeo = new THREE.BoxGeometry(b.width * 0.85, 0.5, b.depth * 0.85);
+    const tankMat = new THREE.MeshStandardMaterial({ color: 0x0284C7, transparent: true, opacity: 0.85 });
+    const tank = new THREE.Mesh(tankGeo, tankMat); tank.position.y = -0.25; layerCistern.add(tank);
+    group.add(layerCistern);
+
+    const layerSurface = new THREE.Group();
     const courtGeo = new THREE.BoxGeometry(b.width, b.height, b.depth);
     const courtMat = new THREE.MeshStandardMaterial({ color: 0x1D4ED8, roughness: 0.4, metalness: 0.1 });
     const courtMesh = new THREE.Mesh(courtGeo, courtMat);
-    courtMesh.position.y = b.height / 2;
-    courtMesh.receiveShadow = true;
-    courtMesh.castShadow = true;
+    courtMesh.position.y = b.height / 2; courtMesh.receiveShadow = true; courtMesh.castShadow = true;
     courtMesh.userData = { buildingId: b.id, buildingData: b };
-    group.add(courtMesh);
+    layerSurface.add(courtMesh);
 
-    // Terracotta Apron Border
     const apronGeo = new THREE.PlaneGeometry(b.width + 0.4, b.depth + 0.4);
-    const apronMat = new THREE.MeshStandardMaterial({ color: 0xB91C1C, roughness: 0.5 });
-    const apron = new THREE.Mesh(apronGeo, apronMat);
-    apron.rotation.x = -Math.PI / 2;
-    apron.position.y = 0.008;
-    apron.receiveShadow = true;
-    group.add(apron);
+    const apronMat = new THREE.MeshStandardMaterial({ color: 0xB91C1C });
+    const apron = new THREE.Mesh(apronGeo, apronMat); apron.rotation.x = -Math.PI / 2; apron.position.y = 0.008;
+    layerSurface.add(apron);
+    group.add(layerSurface);
 
-    // White Key & Line Markings
-    const lineGeo = new THREE.PlaneGeometry(b.width * 0.88, b.depth * 0.88);
-    const lineMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, wireframe: true, opacity: 0.85, transparent: true });
-    const lines = new THREE.Mesh(lineGeo, lineMat);
-    lines.rotation.x = -Math.PI / 2;
-    lines.position.y = b.height + 0.002;
-    group.add(lines);
-
-    // Center Ring
-    const ringGeo = new THREE.RingGeometry(0.3, 0.33, 16);
-    const ringMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
-    const centerRing = new THREE.Mesh(ringGeo, ringMat);
-    centerRing.rotation.x = -Math.PI / 2;
-    centerRing.position.y = b.height + 0.003;
-    group.add(centerRing);
-
-    // 3D Basketball Hoops (Both ends)
-    const poleGeo  = new THREE.CylinderGeometry(0.025, 0.025, 0.9);
-    const poleMat  = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 });
+    const layerSuper = new THREE.Group();
+    const poleGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.9);
+    const poleMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 });
     const boardGeo = new THREE.BoxGeometry(0.4, 0.28, 0.02);
     const boardMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
-    const rimGeo   = new THREE.TorusGeometry(0.07, 0.012, 8, 16);
-    const rimMat   = new THREE.MeshBasicMaterial({ color: 0xEA580C });
 
-    // Left Hoop
-    const pole1 = new THREE.Mesh(poleGeo, poleMat);
-    pole1.position.set(-b.width / 2 + 0.2, 0.45, 0);
-    group.add(pole1);
-    const board1 = new THREE.Mesh(boardGeo, boardMat);
-    board1.position.set(-b.width / 2 + 0.2, 0.75, 0);
-    group.add(board1);
-    const rim1 = new THREE.Mesh(rimGeo, rimMat);
-    rim1.rotation.x = Math.PI / 2;
-    rim1.position.set(-b.width / 2 + 0.32, 0.70, 0);
-    group.add(rim1);
-
-    // Right Hoop
-    const pole2 = new THREE.Mesh(poleGeo, poleMat);
-    pole2.position.set(b.width / 2 - 0.2, 0.45, 0);
-    group.add(pole2);
-    const board2 = new THREE.Mesh(boardGeo, boardMat);
-    board2.position.set(b.width / 2 - 0.2, 0.75, 0);
-    group.add(board2);
-    const rim2 = new THREE.Mesh(rimGeo, rimMat);
-    rim2.rotation.x = Math.PI / 2;
-    rim2.position.set(b.width / 2 - 0.32, 0.70, 0);
-    group.add(rim2);
+    const pole1 = new THREE.Mesh(poleGeo, poleMat); pole1.position.set(-b.width / 2 + 0.2, 0.45, 0); layerSuper.add(pole1);
+    const board1 = new THREE.Mesh(boardGeo, boardMat); board1.position.set(-b.width / 2 + 0.2, 0.75, 0); layerSuper.add(board1);
+    const pole2 = new THREE.Mesh(poleGeo, poleMat); pole2.position.set(b.width / 2 - 0.2, 0.45, 0); layerSuper.add(pole2);
+    const board2 = new THREE.Mesh(boardGeo, boardMat); board2.position.set(b.width / 2 - 0.2, 0.75, 0); layerSuper.add(board2);
+    group.add(layerSuper);
 
     this.buildings.push({
       group, mesh: courtMesh, mat: courtMat, lineMat: null,
-      data: b,
-      baseY: 0, targetY: 0, currentY: 0,
+      data: b, baseY: 0, targetY: 0, currentY: 0, expansionFactor: 0,
+      layers: [
+        { group: layerCistern, baseY: 0, expandY: -1.4 },
+        { group: layerSurface, baseY: 0, expandY: 0.4 },
+        { group: layerSuper,   baseY: 0, expandY: 1.8 },
+      ],
       baseEmissive: 0,
     });
   },
@@ -815,13 +791,57 @@ const Campus3D = {
     });
   },
 
-  /* ── Camera Smooth Glide Pan Animation on Click ──────── */
-  focusBuilding(building) {
+  /* ── 3D Expansion View Activation & Camera Glide Focus ── */
+  expandBuilding(building) {
     if (!building) return;
-    this.targetTargetPos = new THREE.Vector3(building.x, 0.5, building.z);
-    this.targetCamPos = new THREE.Vector3(building.x + 10, 10, building.z + 10);
+    this.expandedBuildingId = building.id;
+    this.currentExpandedBuilding = building;
+
+    // Direct camera close-up focus on expanded block
+    this.targetTargetPos = new THREE.Vector3(building.x, 0.8, building.z);
+    this.targetCamPos = new THREE.Vector3(building.x + 6.5, 5.5, building.z + 6.5);
     this.isCameraPanning = true;
     this.controls.autoRotate = false;
+
+    // Update UI Badge Button Text
+    const btn = document.getElementById('btn-toggle-expand');
+    const txt = document.getElementById('expansion-btn-text');
+    if (btn && txt) {
+      btn.classList.add('active');
+      txt.textContent = `💥 3D Exploded View: ${building.name} (Click to Reset)`;
+    }
+  },
+
+  collapseCurrentExpansion() {
+    this.expandedBuildingId = null;
+    this.currentExpandedBuilding = null;
+
+    // Reset camera to default campus overview position
+    this.targetTargetPos = new THREE.Vector3(0, 0, 0);
+    this.targetCamPos = new THREE.Vector3(26, 20, 26);
+    this.isCameraPanning = true;
+
+    // Reset UI Badge Button Text
+    const btn = document.getElementById('btn-toggle-expand');
+    const txt = document.getElementById('expansion-btn-text');
+    if (btn && txt) {
+      btn.classList.remove('active');
+      txt.textContent = 'Click Block for 3D Floor Expansion View';
+    }
+  },
+
+  toggleCurrentExpansion() {
+    if (this.expandedBuildingId) {
+      this.collapseCurrentExpansion();
+    } else if (typeof App !== 'undefined' && App.currentBuilding) {
+      this.expandBuilding(App.currentBuilding);
+    } else {
+      this.expandBuilding(CampusData.buildings[0]);
+    }
+  },
+
+  focusBuilding(building) {
+    this.expandBuilding(building);
   },
 
   /* ── Interactions & Hover Float Elevation Animation ──── */
@@ -836,12 +856,12 @@ const Campus3D = {
 
     if (intersects.length > 0) {
       const bd = intersects[0].object.userData.buildingData;
-      this.focusBuilding(bd);
+      this.expandBuilding(bd);
       setTimeout(() => {
         if (typeof App !== 'undefined' && App.showBuilding) {
           App.showBuilding(bd);
         }
-      }, 350);
+      }, 300);
     }
   },
 
@@ -858,7 +878,7 @@ const Campus3D = {
         const hoveredMesh = intersects[0].object;
         this.buildings.forEach(b => {
           if (b.mesh === hoveredMesh) {
-            b.targetY = 0.4; // Smooth 3D elevation float!
+            b.targetY = 0.35; // Smooth 3D elevation float!
           } else {
             b.targetY = 0;
           }
@@ -906,15 +926,32 @@ const Campus3D = {
       this.particles.geometry.attributes.position.needsUpdate = true;
     }
 
-    // Smooth hover elevation lerp
+    // Smooth hover elevation & 3D Layer Expansion lerp
     this.buildings.forEach(b => {
       b.currentY += (b.targetY - b.currentY) * 0.12;
       b.group.position.y = b.currentY;
+
+      const isExpanded = (this.expandedBuildingId === b.data.id);
+      const targetExp = isExpanded ? 1.0 : 0.0;
+      b.expansionFactor += (targetExp - b.expansionFactor) * 0.1;
+
+      if (b.layers) {
+        b.layers.forEach(l => {
+          l.group.position.y = THREE.MathUtils.lerp(l.baseY, l.expandY, b.expansionFactor);
+        });
+      }
+
+      if (b.guideLines) {
+        b.guideLines.visible = (b.expansionFactor > 0.03);
+        if (b.guideLines.material) {
+          b.guideLines.material.opacity = b.expansionFactor * 0.65;
+        }
+      }
     });
 
     // Alert pulse animation for JS Block
     this.buildings.forEach(b => {
-      if (b.data.status === 'alert' && b.mat.emissiveIntensity !== undefined) {
+      if (b.data.status === 'alert' && b.mat && b.mat.emissiveIntensity !== undefined) {
         const pulse = (Math.sin(time * 3.0) + 1) / 2;
         b.mat.emissiveIntensity = b.baseEmissive + pulse * 0.25;
       }
